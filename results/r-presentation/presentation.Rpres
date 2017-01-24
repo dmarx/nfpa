@@ -1,8 +1,9 @@
 Fire Service Survey: Initial Exploration and insights
 ========================================================
-author: David Marx (Senior Data Scientist candidate)
+author: David Marx
 date: 2/3/2017
 autosize: true
+font-family: 'Helvetica'
 
 Background
 ========================================================
@@ -14,6 +15,7 @@ Background
 * The Dataset
   * Fire Service Survey
   * 5458 Records (respondents)
+  * Year unknown, post 2011 (per Q5)
 
 Suggestions for improvement to survey
 ========================================================
@@ -21,9 +23,8 @@ Suggestions for improvement to survey
 * Questions prompting numeric responses unnecessarily broken out into ordinal variables reduces data granularity
   * Number of buildings with 3+ stories (Q3)
   * Minimum staffing (Q7-Q10)
-  * 
 * Some questions poorly binned, resulting in skipped ranges and requiring "other" category
-  * Q22d/Q22f
+  * Firefighter fitness (Q22d/f)
 * Inconsistent binning choice across similar questions
   * Hazmat training level prompts for precise percentages
   * Other types of training ask respondent to check a box representing a range

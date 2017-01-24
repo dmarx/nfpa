@@ -123,3 +123,6 @@ survey_dt[,max(abs(perc_personnel_change))] ####### we still have NaN's in here
   * regression to control for state, population, agency size
     * multiply sate indicator with career/volunteer indicator to highlight bad states?
       * Brainfarting on the word for this. If I do this, need to look this up.
+* Can we cluster departments based on their makeup?
+  * Roles/Training levels of personnel
+  * Types and age of apparatus
