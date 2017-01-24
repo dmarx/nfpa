@@ -1,0 +1,112 @@
+---
+title: "NFPA"
+author: "David Marx"
+date: "January 23, 2017"
+output: html_document
+---
+
+NB: Make liberal use of data dictionary. Be selective in the analysis. Start with hypothesis
+generation.
+
+# Setup Workspace
+
+```{r}
+library(data.table)
+library(magrittr)
+library(stringr)
+```
+
+```{r}
+fpath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/data/raw/FireService_DataSet.csv'
+survey <- read.csv(fpath, stringsAsFactors=FALSE) #%>% as.data.table # Doing it this way instead of fread to suppress warnings
+# may be easier to handle nulls as dataframe. Data is small, can coerce to datatable later if I want.
+nrow(survey) # 5458
+as.data.table(survey)
+```
+
+Handle nulls. Assumption: the following are equivalent in the worksheet:
+* empty cell
+* The string '#NULL'
+* white space
+* empty string
+* numbers delimited by commas *
+  * Identify numeric columns by testing the percent of entries that can be successfully coerced
+    to numeric after applying other fixes. Also test for max character length of column
+
+```{r}
+attempt_numeric_coersion = function(column, coersion_succ_threshold=0, max_char=10){
+  obs_max_nchar = max(nchar(column))
+  if(obs_max_nchar>max_char) return(column)
+  column = str_replace(column, ',', '')
+  column_coerced = as.numeric(column)
+  if(sum(is.na(column_coerced))/length(column)>coersion_succ_threshold){
+    return(column)
+  }
+  return(column_coerced)
+}
+
+clean_column_nulls = function(column, replace_val=0) {
+  column[is.na(column)]      <- replace_val
+  column[column == '#NULL!'] <- replace_val
+  attempt_numeric_coersion(column)
+  #column[is.na(column)]      <- replace_val # This is probably gonna obfuscate errors
+}
+```
+
+```{r, warning=FALSE}
+# I'd rather do this on a case by case basis, but given the timeframe I'm supposed to 
+# have this complete by, I just need to get this in a functional state. 3-5 hours for
+# such a wide and messy dataset is a pretty tough ask.
+survey_cleaned = copy(survey)
+for(column in names(survey)){
+  survey_cleaned[,column] = clean_column_nulls(survey[,column])
+}
+survey_dt <- data.table(survey_cleaned)
+```
+
+
+
+# Columns of interest via data dictionary
+
+* state
+* zipcode - nb: 
+
+... There's a lot to work with here. Annotate columns of interest in `documentation/data_dictionary_notes.xlsx`
+
+# Exploration
+
+Personnel change
+
+```{r}
+survey_dt[,net_personnel_change:=0]
+survey_dt[,net_personnel_change:=q5.1-q5.2]
+survey_dt[,perc_personnel_change:=(q6-net_personnel_change)/q6]
+h = survey_dt[,hist(net_personnel_change, breaks=50)]
+plot(h$mids, h$counts, type='h', log='y') # log normal, mostly negligible net change
+
+survey_dt[,plot(q6, net_personnel_change, main='Change as a function of total personnel')]
+
+h2 = survey_dt[,hist(perc_personnel_change, main='Percent change from 2011')]
+plot(h2$mids, h2$counts, type='h')
+
+xv = seq(0,5, by=.01)
+ecdf_fn = survey_dt[,ecdf(abs(perc_personnel_change))]
+survey_dt[,plot(xv, ecdf_fn(xv))]
+(right_tail = 1-ecdf_fn(1000)) # .0714
+(ecdf_fn(2)+right_tail) # 0.9896429 (0.9182143)
+(ecdf_fn(5)+right_tail) # 0.9971429 (0.9257143)
+survey_dt[,max(abs(perc_personnel_change))] ####### we still have NaN's in here
+```
+
+99% of departments are within 2% of staffing levels from 2011. 
+
+
+```{r}
+
+
+```
+
+## Investigatory questions:
+
+* What states/jurisdictions have the highest female representation in the fire service? Choropleth visualization
+* 
