@@ -8,6 +8,10 @@ output: html_document
 NB: Make liberal use of data dictionary. Be selective in the analysis. Start with hypothesis
 generation.
 
+NB: Dataset is incomplete. Q 31 cuts off at 5 options, but 31 in survey. Missing all of 32-46, and part VIII (three-part free text)
+
+--> This is actually false, the columns are just out of order.
+
 # Setup Workspace
 
 ```{r}
@@ -96,6 +100,8 @@ survey_dt[,plot(xv, ecdf_fn(xv))]
 (ecdf_fn(2)+right_tail) # 0.9896429 (0.9182143)
 (ecdf_fn(5)+right_tail) # 0.9971429 (0.9257143)
 survey_dt[,max(abs(perc_personnel_change))] ####### we still have NaN's in here
+
+#### Replace ecdf with boxplot? ####
 ```
 
 99% of departments are within 2% of staffing levels from 2011. 
@@ -108,5 +114,12 @@ survey_dt[,max(abs(perc_personnel_change))] ####### we still have NaN's in here
 
 ## Investigatory questions:
 
-* What states/jurisdictions have the highest female representation in the fire service? Choropleth visualization
-* 
+* What states/jurisdictions have the highest female representation in the fire service? 
+  * Choropleth visualization
+* is there a difference between representation of women among career staff vs volunteer?
+  * Proportions test between career/volunteer
+    * Bucketed by agency size quartiles
+  * regression to control for agency size 
+  * regression to control for state, population, agency size
+    * multiply sate indicator with career/volunteer indicator to highlight bad states?
+      * Brainfarting on the word for this. If I do this, need to look this up.
