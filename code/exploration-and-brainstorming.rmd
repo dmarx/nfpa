@@ -20,6 +20,7 @@ library(magrittr)
 library(stringr)
 library(ggplot2)
 library(ggExtra)
+library(ROCR)
 ```
 
 ```{r}
@@ -204,4 +205,52 @@ summary(mod_prob)
 # 
 # Goal: turn this into a more easily digested finding, preferably a plot.
 # --> devil's horn plot
+# --> Contour plot demonstrating probability of volunteer given total_ff and female_ff
+
+#Relative effect of female_ff coefficient compared to total_ff
+abs(coef(mod_prob)['female_ff']/coef(mod_prob)['total_ff']) # 7
+# adding one woman to a department has the same effect on the odds of it being a volunteer
+# department as removing seven members.
+```
+
+# Evaluate model via AUC and bootstrap
+
+```{r, warning=FALSE}
+k=1e3
+n=nrow(all)
+acc=rep(NA, k)
+#yp_all <- rep(NA, k*n)
+#yt_all <- rep(NA, k*n)
+for(i in 1:k){
+  ix <- sample(n,n,replace=TRUE)
+  mod_prob_ix <- glm(1*(categ=='vol')~female_ff + total_ff, data=all[ix], family=binomial)
+  yp_prob <- predict(mod_prob, newdata=all[-ix], type='response')
+  yp <- yp_prob>0.5
+  yt <- all[-ix,categ=='vol']
+  acc[i] = mean(yp == yt)
+  
+  low <- (i-1)*n + 1
+  high <- i*n
+  #yp_all[low:high] <- yp_prob
+  #yt_all[low:high] <- yt
+}
+
+mean(acc)
+quantile(acc, c(0.025, .975))
+```
+
+77% accuracy, 95% CI: 75.3% - 78.7%
+
+```{r}
+yp <- predict(mod_prob, newdata=all, type='response')
+yt <- all[,categ=='vol']
+#pred <- prediction(yp_all, yt_all)
+pred <- prediction(yp, yt)    
+perf <- performance(pred, measure = "tpr", x.measure = "fpr")   
+auroc <- performance(pred, measure='auc')
+plot(perf, col=rainbow(7), 
+     main=paste0("ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"), 
+     xlab="True Positive Rate", 
+     ylab="False Positive Rate")    
+abline(0, 1, lty=2) #add a 45 degree line
 ```

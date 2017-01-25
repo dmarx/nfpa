@@ -70,7 +70,14 @@ Preparing Data
 * Stripped commas prior to numeric coersion, being careful to avoid stripping 
   commas from text columns
 
-Findings
+FINDINGS
+========================================================
+
+* Staffing levels (paid) are stable
+* Women have stronger representation in volunteer departments
+
+
+Staffing levels (paid) are stable
 ========================================================
 
 52% of departments have no full-time paid personnel. Of those that have paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
@@ -94,4 +101,26 @@ gg <- ggplot(survey_dt[q6>0],
 gg
 ```
 
+Representation of Women
+========================================================
 
+* Controlling for department size, women have higher representation in volunteer departments
+  * If you selected a random paid and volunteer departments of equal size, the one with more women would be more likely to be the volunteer department.
+
+Representation of Women: Boring technical details
+========================================================
+
+* Logistic regression: `is_volunteer_dept ~ total_ff + female_ff`
+* Evaluation Metrics
+  * Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
+  * AUC (ROC): 0.84
+* Coefficients:
+
+```
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  1.641406   0.061250   26.80   <2e-16 ***
+female_ff    0.200858   0.012611   15.93   <2e-16 ***
+total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
+```  
+
+* Relative effect (on odds ratio) of female_ff: ~7x
