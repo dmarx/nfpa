@@ -1,4 +1,4 @@
----
+c---
 title: "NFPA"
 author: "David Marx"
 date: "January 23, 2017"
@@ -14,18 +14,19 @@ NB: Dataset is incomplete. Q 31 cuts off at 5 options, but 31 in survey. Missing
 
 # Setup Workspace
 
-```{r}
+```{r, echo=FALSE, message=FALSE}
 library(data.table)
 library(magrittr)
 library(stringr)
+library(ggplot2)
+library(ggExtra)
 ```
 
 ```{r}
-fpath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/data/raw/FireService_DataSet.csv'
-survey <- read.csv(fpath, stringsAsFactors=FALSE) #%>% as.data.table # Doing it this way instead of fread to suppress warnings
-# may be easier to handle nulls as dataframe. Data is small, can coerce to datatable later if I want.
+basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
+survey <- read.csv(paste0(basepath, 'data/raw/FireService_DataSet.csv'), stringsAsFactors=FALSE) 
 nrow(survey) # 5458
-as.data.table(survey)
+#as.data.table(survey)
 ```
 
 Handle nulls. Assumption: the following are equivalent in the worksheet:
@@ -66,20 +67,18 @@ for(column in names(survey)){
   survey_cleaned[,column] = clean_column_nulls(survey[,column])
 }
 survey_dt <- data.table(survey_cleaned)
+save(survey_dt, file=paste0(basepath, 'data/processed/survey_dt.rdata'))
 ```
 
 
 
 # Columns of interest via data dictionary
 
-* state
-* zipcode - nb: 
-
-... There's a lot to work with here. Annotate columns of interest in `documentation/data_dictionary_notes.xlsx`
+see `documentation/data_dictionary_notes.xlsx`
 
 # Exploration
 
-Personnel change
+Personnel change (paid)
 
 ```{r}
 survey_dt[,net_personnel_change:=0]
@@ -88,28 +87,60 @@ survey_dt[,perc_personnel_change:=(q6-net_personnel_change)/q6]
 h = survey_dt[,hist(net_personnel_change, breaks=50)]
 plot(h$mids, h$counts, type='h', log='y') # log normal, mostly negligible net change
 
+survey_dt[q6==0, .N] # 2858
+survey_dt[q6==0, .N]/survey_dt[,.N] # 52% of departments have no full-time paid personnel
+
 survey_dt[,plot(q6, net_personnel_change, main='Change as a function of total personnel')]
 
-h2 = survey_dt[,hist(perc_personnel_change, main='Percent change from 2011')]
+h2 = survey_dt[q6>0,hist(perc_personnel_change, main='Percent change from 2011')]
 plot(h2$mids, h2$counts, type='h')
 
 xv = seq(0,5, by=.01)
 ecdf_fn = survey_dt[,ecdf(abs(perc_personnel_change))]
-survey_dt[,plot(xv, ecdf_fn(xv))]
-(right_tail = 1-ecdf_fn(1000)) # .0714
-(ecdf_fn(2)+right_tail) # 0.9896429 (0.9182143)
-(ecdf_fn(5)+right_tail) # 0.9971429 (0.9257143)
-survey_dt[,max(abs(perc_personnel_change))] ####### we still have NaN's in here
+survey_dt[q6>0,plot(xv, ecdf_fn(xv))]
+#(right_tail = 1-ecdf_fn(1000)) # .0714
+(ecdf_fn(2)) # 0.9182143
+(ecdf_fn(5)) # 0.9257143
+survey_dt[q6>0,max(abs(perc_personnel_change))] # 11
 
 #### Replace ecdf with boxplot? ####
+
+
+save(survey_dt, file=paste0(basepath, 'data/processed/survey_dt.rdata'))
 ```
 
-99% of departments are within 2% of staffing levels from 2011. 
+52% of departments have no full-time paid personnel. Of those that have paid personnel, 92% of departments are within 2% of paid staffing levels from 2011. 
 
+--> compare against part-time/volunteer/total
 
 ```{r}
+ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
+yv <- ecdf_fn(2)
 
+gg <- ggplot(survey_dt[q6>0], 
+             aes(abs(perc_personnel_change), 100*ecdf_fn(abs(perc_personnel_change)))) +
+        geom_line() +
+        #stat_ecdf(geom='line') +
+        #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
+        geom_vline(color="red", xintercept = 2, linetype = "longdash") +
+        scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
+        labs(x="Absolute % Personnel Change (Paid)",
+             y="Cumulative Percent of Depts w/Paid Personnel"
+             )
+        
+gg
+  
+```
 
+```{r, echo=FALSE}
+
+gg <- ggplot(survey_dt[q6>0], aes(x=1,y=perc_personnel_change)) + 
+        geom_boxplot()
+
+ggExtra::ggMarginal(gg, type = "histogram", margins='y')
+  
+# Distribution is so tight, the boxplot presents as a flat line. Not worth it. 
+# Stick with eCDF
 ```
 
 ## Investigatory questions:
@@ -126,3 +157,51 @@ survey_dt[,max(abs(perc_personnel_change))] ####### we still have NaN's in here
 * Can we cluster departments based on their makeup?
   * Roles/Training levels of personnel
   * Types and age of apparatus
+  
+```{r}
+survey_dt[,total_ff:= q6 + q11]
+survey_dt[,female_ff:= q6.1 + q11.1]
+survey_dt[,perc_female:= female_ff/total_ff]
+#survey_dt[,plot(total_ff, female_ff, log='xy')]
+#survey_dt[,plot(total_ff, female_ff/total_ff, log='x')]
+
+women_by_state <- survey_dt[, .(total_ff=sum(total_ff), female_ff=sum(female_ff)), .(state)]
+women_by_state[,perc_female:=female_ff/total_ff]
+
+women_by_state[,plot(total_ff, perc_female)]
+mod <- lm(perc_female~total_ff, women_by_state)
+women_by_state[,plot(total_ff, perc_female)]
+abline(mod)
+summary(mod)
+```
+
+```{r}
+# Compare female representation between volunteer and paid departments
+# Fit models for volunteer and paid/fte respectively. Do ANOVA between two models
+# to test difference in representation.
+
+survey_dt[,plot(q6, q6.1, main='Paid/FTE')]
+survey_dt[,points(q11, q11.1, col='blue')]
+
+paid <- survey_dt[q6>20,.(total_ff=q6, female_ff=q6.1, categ='paid')]
+vol  <- survey_dt[q11>20,.(total_ff=q11, female_ff=q11.1, categ='vol')]
+all = rbindlist(list(paid, vol))
+mod_paid <- lm(female_ff~total_ff, paid)
+mod_vol  <- lm(female_ff~total_ff, vol)
+
+#anova(mod_paid, mod_vol)
+summary(mod_paid) # poor fit
+summary(mod_vol) # poor fit
+
+mod_full = lm(female_ff~total_ff + categ, all)
+summary(mod_full)
+plot(mod_full)
+
+mod_prob <- glm(1*(categ=='vol')~female_ff + total_ff, data=all, family=binomial)
+summary(mod_prob) 
+# positive valued coeffificient for female_ff indicates that when controlling for department
+# size, women have better representation on the part-time/volunteer side than paid/FTE.
+# 
+# Goal: turn this into a more easily digested finding, preferably a plot.
+# --> devil's horn plot
+```

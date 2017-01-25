@@ -5,6 +5,9 @@ date: 2/3/2017
 autosize: true
 font-family: 'Helvetica'
 
+
+
+
 Background
 ========================================================
 
@@ -28,7 +31,10 @@ Suggestions for improvement to survey
 * Inconsistent binning choice across similar questions
   * Hazmat training level prompts for precise percentages
   * Other types of training ask respondent to check a box representing a range
-
+* Migrate to electronic survey platform
+  * Minimize errors from multiple human data-entry steps
+  * Automatic data integrity checks (e.g. percents add up to 100)
+  * Ensure necessary questions are not left blank
 
 
 Suggestions for improvement to dataset
@@ -59,37 +65,12 @@ Preparing Data
 * Stripped commas prior to numeric coersion, being careful to avoid stripping 
   commas from text columns
 
-Preparing Data
+Findings
 ========================================================
 
+52% of departments have no full-time paid personnel. Of those that have paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
 
-```r
-library(data.table)
-library(stringr)
-attempt_numeric_coersion = function(column, coersion_succ_threshold=0, max_char=10){
-  # coersion_succ_threshold: return original data if fewer than this fraction of 
-  #   records were successfully coerced to numeric after comma replacement. Default=0
-  # max_char: if column contains any entries with more than max_char characters,
-  #   return original data. Default=10
-  obs_max_nchar = max(nchar(column))
-  if(obs_max_nchar>max_char) return(column)
-  column = str_replace(column, ',', '')
-  column_coerced = as.numeric(column)
-  if(sum(is.na(column_coerced))/length(column)>coersion_succ_threshold){
-    return(column)
-  }
-  return(column_coerced)
-}
 
-clean_column_nulls = function(column, replace_val=0) {
-  column[is.na(column)]     <- replace_val
-  column[column == '#NULL!'] <- replace_val
-  attempt_numeric_coersion(column)
-}
+![plot of chunk unnamed-chunk-2](presentation-figure/unnamed-chunk-2-1.png)
 
-survey_cleaned = copy(survey)
-for(column in names(survey)){
-  survey_cleaned[,column] = clean_column_nulls(survey[,column])
-}
-survey_dt <- data.table(survey_cleaned)
-```
+
