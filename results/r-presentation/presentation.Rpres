@@ -143,7 +143,8 @@ Representation of Women: Boring technical details
 ========================================================
 
 * Logistic regression: `is_volunteer_dept ~ total_ff + female_ff`
-* Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
+* Bootstrapped accuracy (200 iterations): 77.0% (95% CI: 75.3% - 78.7%)
+  * p < 0.005 (estimated via permutation test on bootstrapped accuracy, 200 iterations)
 * AUC (ROC): 0.84
 * Relative effect (on odds ratio) of female_ff: ~7x
 
@@ -168,3 +169,10 @@ ggplot(roc_df, aes(xv, yv)) +
        title=paste0("ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"))
 
 ```
+
+Future Work
+========================================================
+
+* Be more careful with null data
+* Revisit gender analysis with zero-inflated modeling
+* Play with free text fields

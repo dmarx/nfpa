@@ -218,6 +218,7 @@ abs(coef(mod_prob)['female_ff']/coef(mod_prob)['total_ff']) # 7
 ```{r, warning=FALSE}
 set.seed(123)
 k=1e3
+#k=2e2 # pretty much the same as 1e3 result. Use this for target shuffling
 n=nrow(all)
 acc=rep(NA, k)
 #yp_all <- rep(NA, k*n)
@@ -241,6 +242,38 @@ quantile(acc, c(0.025, .975))
 ```
 
 77% accuracy, 95% CI: 75.3% - 78.7%
+
+# Significance of model accuracy via target shuffling
+
+```{r}
+set.seed(123)
+p=200 # bootstrap iters
+q=200 # target shuffle iters
+n=nrow(all)
+acc_ts=rep(NA, q)
+for(j in 1:q){
+  ts_ix <- sample(n,n,replace=FALSE)
+  shuffled = copy(all)
+  shuffled[,categ:=all$categ[ts_ix]]
+  
+  acc_iter=rep(NA, k)
+  for(i in 1:p){
+    ix <- sample(n,n,replace=TRUE)
+    mod_prob_ix <- glm(1*(categ=='vol')~female_ff + total_ff, 
+                       data=shuffled[ix], family=binomial)
+    yp_prob <- predict(mod_prob, newdata=shuffled[-ix], type='response')
+    yp <- yp_prob>0.5
+    yt <- shuffled[-ix,categ=='vol']
+    acc_iter[i] = mean(yp == yt)
+  }
+  acc_ts[j] = mean(acc_iter)
+}
+```
+
+```{r}
+# Simulated p-value
+mean(acc_ts >=0.7709938) # p < 0.005
+```
 
 ```{r}
 yp <- predict(mod_prob, newdata=all, type='response')

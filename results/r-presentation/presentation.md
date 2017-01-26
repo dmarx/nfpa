@@ -108,7 +108,8 @@ Representation of Women: Boring technical details
 ========================================================
 
 * Logistic regression: `is_volunteer_dept ~ total_ff + female_ff`
-* Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
+* Bootstrapped accuracy (200 iterations): 77.0% (95% CI: 75.3% - 78.7%)
+  * p < 0.005 (estimated via permutation test on bootstrapped accuracy, 200 iterations)
 * AUC (ROC): 0.84
 * Relative effect (on odds ratio) of female_ff: ~7x
 
@@ -123,3 +124,10 @@ Representation of Women: ROC
 ========================================================
 
 ![plot of chunk unnamed-chunk-4](presentation-figure/unnamed-chunk-4-1.png)
+
+Future Work
+========================================================
+
+* Be more careful with null data
+* Revisit gender analysis with zero-inflated modeling
+* Play with free text fields
