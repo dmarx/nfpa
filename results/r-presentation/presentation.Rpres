@@ -10,7 +10,7 @@ font-family: 'Helvetica'
 library(ggplot2)
 library(data.table)
 basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
-load(paste0(basepath, 'data/processed/survey_dt.rdata'))
+load(paste0(basepath, 'data/processed/workspace.rdata'))
 ```
 
 Background
@@ -105,7 +105,23 @@ Representation of Women
 ========================================================
 
 * Controlling for department size, women have higher representation in volunteer departments
-  * If you selected a random paid and volunteer departments of equal size, the one with more women would be more likely to be the volunteer department.
+* 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+
+```{r, echo=FALSE}
+intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
+slope     <- -coef(mod_prob)['total_ff'] / coef(mod_prob)['female_ff']
+
+gg <- ggplot(all, aes(total_ff, female_ff)) +
+  geom_point(aes(color=categ), alpha=0.3) +
+  geom_abline(slope=slope, intercept=intercept, linetype = 2) +
+  xlim(0,2000) +
+  ylim(0,250) +
+  labs(x="Total Firefighters", y="Female Firefighters") +
+  geom_text(x=1000, y=150, angle=40, 
+            label="y = 0.144 x - 8.17",  fontface=3, size=3)
+
+gg
+```
 
 Representation of Women: Boring technical details
 ========================================================
@@ -114,7 +130,7 @@ Representation of Women: Boring technical details
 * Evaluation Metrics
   * Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
   * AUC (ROC): 0.84
-* Coefficients:
+* Relative effect (on odds ratio) of female_ff: ~7x
 
 ```
              Estimate Std. Error z value Pr(>|z|)    
@@ -123,4 +139,17 @@ female_ff    0.200858   0.012611   15.93   <2e-16 ***
 total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
 ```  
 
-* Relative effect (on odds ratio) of female_ff: ~7x
+Representation of Women: ROC
+========================================================
+
+```{r, echo=FALSE}
+roc_df = data.frame(xv=perf@x.values[[1]], yv=perf@y.values[[1]])
+
+ggplot(roc_df, aes(xv, yv)) + 
+  geom_line() +
+  geom_abline(slope=1, intercept=0, linetype=2) +
+  labs(x="False Positive Rate",
+       y="True Positive Rate",
+       title=paste0("ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"))
+
+```

@@ -84,7 +84,9 @@ Representation of Women
 ========================================================
 
 * Controlling for department size, women have higher representation in volunteer departments
-  * If you selected a random paid and volunteer departments of equal size, the one with more women would be more likely to be the volunteer department.
+* 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+
+![plot of chunk unnamed-chunk-3](presentation-figure/unnamed-chunk-3-1.png)
 
 Representation of Women: Boring technical details
 ========================================================
@@ -93,7 +95,7 @@ Representation of Women: Boring technical details
 * Evaluation Metrics
   * Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
   * AUC (ROC): 0.84
-* Coefficients:
+* Relative effect (on odds ratio) of female_ff: ~7x
 
 ```
              Estimate Std. Error z value Pr(>|z|)    
@@ -102,4 +104,7 @@ female_ff    0.200858   0.012611   15.93   <2e-16 ***
 total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
 ```  
 
-* Relative effect (on odds ratio) of female_ff: ~7x
+Representation of Women: ROC
+========================================================
+
+![plot of chunk unnamed-chunk-4](presentation-figure/unnamed-chunk-4-1.png)

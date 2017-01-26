@@ -68,7 +68,7 @@ for(column in names(survey)){
   survey_cleaned[,column] = clean_column_nulls(survey[,column])
 }
 survey_dt <- data.table(survey_cleaned)
-save(survey_dt, file=paste0(basepath, 'data/processed/survey_dt.rdata'))
+#save(survey_dt, file=paste0(basepath, 'data/processed/survey_dt.rdata'))
 ```
 
 
@@ -216,6 +216,7 @@ abs(coef(mod_prob)['female_ff']/coef(mod_prob)['total_ff']) # 7
 # Evaluate model via AUC and bootstrap
 
 ```{r, warning=FALSE}
+set.seed(123)
 k=1e3
 n=nrow(all)
 acc=rep(NA, k)
@@ -253,4 +254,38 @@ plot(perf, col=rainbow(7),
      xlab="True Positive Rate", 
      ylab="False Positive Rate")    
 abline(0, 1, lty=2) #add a 45 degree line
+```
+
+```{r}
+# separating hyperplane at y=-x
+all[,plot(total_ff, female_ff, col=1+(categ=='vol'))]
+intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
+slope     <- -coef(mod_prob)['total_ff'] / coef(mod_prob)['female_ff']
+print(c(intercept, slope)) # .144 (boundary at approx 14%)
+abline(a=intercept, b=slope, lty=2)
+```
+
+```{r}
+intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
+slope     <- -coef(mod_prob)['total_ff'] / coef(mod_prob)['female_ff']
+
+gg <- ggplot(all, aes(total_ff, female_ff)) +
+  geom_point(aes(color=categ), alpha=0.3) +
+  geom_abline(slope=slope, intercept=intercept, linetype = 2) +
+  xlim(0,2000) +
+  ylim(0,250) +
+  labs(x="Total Firefighters", y="Female Firefighters")
+
+gg + geom_text(x=1000, y=150, label="y = 0.144 x - 8.17", angle=40, fontface=3, size=3)
+
+```
+
+```{r}
+all[total_ff>0,mean(female_ff/total_ff>=.08), categ]
+```
+
+21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+
+```{r}
+save.image(file=paste0(basepath, 'data/processed/workspace.rdata'))
 ```
