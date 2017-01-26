@@ -20,6 +20,11 @@ Background
   * 5458 Records (respondents)
   * Year unknown, post 2011 (per Q5)
 
+The Survey
+========================================================
+
+![image](C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/images/survey_screenshot.png)
+
 Suggestions for improvement to survey
 ========================================================
 
@@ -31,6 +36,9 @@ Suggestions for improvement to survey
 * Inconsistent binning choice across similar questions
   * Hazmat training level prompts for precise percentages
   * Other types of training ask respondent to check a box representing a range
+  
+But most importantly...
+========================================================
 * Migrate to electronic survey platform
   * Minimize errors from multiple human data-entry steps
   * Automatic data integrity checks (e.g. percents add up to 100)
@@ -49,6 +57,9 @@ Suggestions for improvement to dataset
   * Column order should align with ordering in survey
   * At first glance, it appears that Q31 is incomplete, and Q32-46 and all of PART VIII are missing
   
+Suggestions for improvement to dataset
+========================================================
+  
 ### Large numeric values used xx,xxx comma delimiting
 * Forces coersion to text
 * Necessitates otherwise unnecessary data cleaning step
@@ -61,6 +72,8 @@ Preparing Data
 * Cleaning in this fashion had the additional effect of creating a new "null" category on questions associated with categorical/ordinal variables, since categories are otherwise 1-indexed in the data
 * Normally I would advise performing this kind of cleaning operation on a variable-by-variable basis. Broad strokes are dangerous, but time was limited in this analysis.
 
+Preparing Data
+========================================================
 ### Cleaning Numbers
 * Stripped commas prior to numeric coersion, being careful to avoid stripping 
   commas from text columns
@@ -86,15 +99,17 @@ Representation of Women
 * Controlling for department size, women have higher representation in volunteer departments
 * 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
 
+Representation of Women
+========================================================
+
 ![plot of chunk unnamed-chunk-3](presentation-figure/unnamed-chunk-3-1.png)
 
 Representation of Women: Boring technical details
 ========================================================
 
 * Logistic regression: `is_volunteer_dept ~ total_ff + female_ff`
-* Evaluation Metrics
-  * Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
-  * AUC (ROC): 0.84
+* Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%)
+* AUC (ROC): 0.84
 * Relative effect (on odds ratio) of female_ff: ~7x
 
 ```
