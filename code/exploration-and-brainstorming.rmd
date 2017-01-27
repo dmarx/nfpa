@@ -276,6 +276,11 @@ mean(acc_ts >=0.7709938) # p < 0.005
 ```
 
 ```{r}
+plot(density(acc))
+plot(density(acc_ts))
+```
+
+```{r}
 yp <- predict(mod_prob, newdata=all, type='response')
 yt <- all[,categ=='vol']
 #pred <- prediction(yp_all, yt_all)
@@ -318,6 +323,26 @@ all[total_ff>0,mean(female_ff/total_ff>=.08), categ]
 ```
 
 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+
+ggtheme: http://minimaxir.com/2015/02/ggplot-tutorial/
+
+## Experiment with some mapping
+
+```{r}
+library(googleVis)
+
+respondents_by_state = survey_dt[,.N, .(state)]
+
+G <- gvisGeoChart(respondents_by_state, "state", "N",
+                  options=list(region="US",
+                               #projection="kavrayskiy-vii",
+                               displayMode="regions", 
+                                       resolution="provinces",
+                               colorAxis="{colors:['#91BFDB', '#FC8D59']}")
+                  )
+plot(G)
+```
+
 
 ```{r}
 save.image(file=paste0(basepath, 'data/processed/workspace.rdata'))
