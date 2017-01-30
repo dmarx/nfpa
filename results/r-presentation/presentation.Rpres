@@ -4,7 +4,7 @@ author: David Marx
 date: 2/3/2017
 autosize: true
 font-family: 'Helvetica'
-
+transition: rotate
 
 ```{r, echo=FALSE}
 library(ggplot2)
@@ -16,14 +16,9 @@ load(paste0(basepath, 'data/processed/workspace.rdata'))
 Background
 ========================================================
 
-* Applying for Senior Data Scientist Position at NFPA
-* Assigned data analysis task as part of evaluation
-* Asked to limit effort to 3-5 hours
-* Written report + presentation
-* The Dataset
-  * Fire Service Survey
-  * 5458 Records (respondents)
-  * Year unknown, post 2011 (per Q5)
+* Fire Service Survey
+* 5458 Records (respondents)
+* Year unknown, post 2011 (per Q5)
 
 The Survey
 ========================================================
@@ -120,8 +115,10 @@ Representation of Women
 * Controlling for department size, women have higher representation in volunteer departments
 * 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
 
-Representation of Women
+Decision Boundary
 ========================================================
+
+Approximately 14% representation
 
 ```{r, echo=FALSE}
 intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
@@ -142,37 +139,56 @@ gg
 Representation of Women: Boring technical details
 ========================================================
 
-* Logistic regression: `is_volunteer_dept ~ total_ff + female_ff`
-* Bootstrapped accuracy (200 iterations): 77.0% (95% CI: 75.3% - 78.7%)
-  * p < 0.005 (estimated via permutation test on bootstrapped accuracy, 200 iterations)
-* AUC (ROC): 0.84
-* Relative effect (on odds ratio) of female_ff: ~7x
+* Logistic regression
+* Relative effect on odds ratio of female_ff vs total_ff: 7x
 
 ```
+    is_volunteer_dept ~ total_ff + female_ff
+
              Estimate Std. Error z value Pr(>|z|)    
 (Intercept)  1.641406   0.061250   26.80   <2e-16 ***
 female_ff    0.200858   0.012611   15.93   <2e-16 ***
 total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
 ```  
 
-Representation of Women: ROC
+Model Validation
 ========================================================
+
+* Bootstrapped accuracy (200 iterations): 77.0% (95% CI: 75.3% - 78.7%), 
+* p < 0.005 (permutation test)
+* Area Under ROC Curve: 0.84
+
+***
 
 ```{r, echo=FALSE}
 roc_df = data.frame(xv=perf@x.values[[1]], yv=perf@y.values[[1]])
 
-ggplot(roc_df, aes(xv, yv)) + 
+gg <- ggplot(roc_df, aes(xv, yv)) + 
   geom_line() +
   geom_abline(slope=1, intercept=0, linetype=2) +
   labs(x="False Positive Rate",
        y="True Positive Rate",
        title=paste0("ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"))
 
+gg
+
 ```
 
-Future Work
+Test speaker notes
 ========================================================
 
+foobar
+
+<div class="notes">
+        Oh hey, these are some notes. They'll be hidden in your presentation, but you can see them if you open the speaker notes window (hit 's' on your keyboard).
+    </div>
+
+
+
+Future work
+========================================================
+
+* More closely investigate variables associated with FD needs
 * Be more careful with null data
 * Revisit gender analysis with zero-inflated modeling
 * Play with free text fields

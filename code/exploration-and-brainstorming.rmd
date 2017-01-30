@@ -345,5 +345,46 @@ plot(G)
 
 
 ```{r}
+
+library(rCharts)
+library(rMaps)
+
+respondents_by_state = survey_dt[,.N, .(state)]
+
+icl <- ichoropleth(N~state,
+                   data=respondents_by_state,
+                   pal='Reds', 
+                   legend=TRUE)
+
+icl
+```
+
+
+```{r}
+library(knitr) # for opts_current
+a <- rMaps:::Leaflet$new()
+a$setView(c(59.34201, 18.09503), zoom = 13)
+a$geoJson(survey_dt[,.(state)],
+  onEachFeature = '#! function(feature, layer){
+    if (feature.properties && feature.properties.popupContent) {
+        layer.bindPopup(feature.properties.popupContent);
+    }
+  } !#',
+  pointToLayer =  "#! function(feature, latlng){
+    return L.circleMarker(latlng, {
+      radius: 6,
+      fillColor: feature.properties.fillColor,
+      weight: 1,
+      fillOpacity: 0.8
+    })
+  }!#"
+)
+a$set(height = 300)
+#a$show('inline', cdn = TRUE)
+a$save("a.html")
+shiny::includeHTML("a.html") 
+```
+
+```{r}
 save.image(file=paste0(basepath, 'data/processed/workspace.rdata'))
 ```
