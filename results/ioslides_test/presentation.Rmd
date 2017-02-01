@@ -109,7 +109,7 @@ shiny::includeHTML("gvis_chart.html")
 
 * Staffing levels (paid) are stable
 * Women have stronger representation in volunteer departments
-
+* The apparatus fleet is aging
 
 ## Staffing levels (paid) are stable
 
@@ -201,6 +201,17 @@ gg
 
 ```
 
+
+## Aging Fleet
+
+
+
+```{r, echo=FALSE}
+ggplot(melted, aes(age, 100*value)) + 
+  geom_bar(aes(fill = variable), position = "dodge", stat="identity") +
+  labs(title="Age of In-Service Apparatus",
+       x="Age", y="Percent of Departments")
+```
 
 ## Future work
 

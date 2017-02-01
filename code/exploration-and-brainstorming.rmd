@@ -21,6 +21,7 @@ library(stringr)
 library(ggplot2)
 library(ggExtra)
 library(ROCR)
+library(dplyr)
 ```
 
 ```{r}
@@ -180,6 +181,10 @@ summary(mod)
 # Compare female representation between volunteer and paid departments
 # Fit models for volunteer and paid/fte respectively. Do ANOVA between two models
 # to test difference in representation.
+
+#survey_dt[q12>q6+q11, .N] # 22 depts list more auxiliary members than total career or volunteer
+# Assuming I don't need to subtract out auxiliary counts. Validating that "firefighter" language
+# is used in a manner useful for this analysis.
 
 survey_dt[,plot(q6, q6.1, main='Paid/FTE')]
 survey_dt[,points(q11, q11.1, col='blue')]
@@ -386,5 +391,81 @@ shiny::includeHTML("a.html")
 ```
 
 ```{r}
+survey_dt
+
+#' Training levels:
+#' FF:    [q13a==1, mean(1-(q13b!=6))]
+#' EMS:   [q14a==1, q14b]
+#' hazmt: [q15a==1, q15b]
+#' wild:  [q16a==1, ]
+
+#Backtracking: should account for q12 in representation of women?
+
+survey_dt[q13a==1, mean((q13b!=6))] # .38 no FF
+#survey_dt[q14a==1, hist(q14b.a)] #EMS tough to analyze
+survey_dt[q15a==1, mean((q15b.a>0))] # .30 no hazmat
+
+
+```
+
+```{r}
+#survey_dt[,appS_0_14:=q34.1.1+q34.3.1+q34.5.1]
+mat = matrix(NA, 6, 6)
+badcols = c('q34.3.5')
+for(i in 1:6){
+  row_ix = c(1:5, 'tot')[i]
+  for(j in 1:6){
+    colname = paste('q34', j, row_ix, sep='.')
+    if(colname %in% badcols) next
+    mat[i,j] = survey_dt[,sum(get(colname)>0)] # coutning depts with apparatus in service this age
+  }
+}
+apparatus = data.table(mat)
+apparatus[,age := c('0-14','15-19','20-29','30+','unk','tot')]
+setnames(apparatus, 
+  paste0('V',1:6), 
+  c('engn_insvc','engn_resv',
+    'ladr_insvc','ladr_resv',
+    'tnkr_insvc','tnkr_resv'
+    )
+)
+apparatus = data.frame(apparatus)
+apparatus[is.na(apparatus)] = 0
+
+# Reporting discrepancy
+rowSums(apparatus[1:5, -7]) - apparatus[6, -7]
+
+# Let's ignore the reported totals and assume the specified numbers are correct.
+apparatus = data.table(apparatus)
+apparatus_insvc = apparatus[1:5,.(engn_insvc, ladr_insvc, tnkr_insvc, age)]
+insvc_tot = apparatus_insvc[,.(sum(engn_insvc), sum(ladr_insvc), sum(tnkr_insvc))]
+
+apparatus_insvc[,c('engn_perc', 'ladr_perc','tnkr_perc'):=list(engn_insvc, ladr_insvc, tnkr_insvc)/insvc_tot]
+
+apparatus_insvc
+
+melted = melt(apparatus_insvc[,.(age, Engines=engn_perc, Ladders=ladr_perc, Tankers=tnkr_perc)], 
+              id.vars='age')
+
+ggplot(melted, aes(age, 100*value)) + 
+  geom_bar(aes(fill = variable), position = "dodge", stat="identity") +
+  labs(title="Age of In-Service Apparatus",
+       x="Age", y="Percent of Departments")
+```
+
+
+```{r}
 save.image(file=paste0(basepath, 'data/processed/workspace.rdata'))
+```
+
+
+```{r}
+library(data.table)
+library(magrittr)
+library(stringr)
+library(ggplot2)
+library(ggExtra)
+library(ROCR)
+basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
+load(paste0(basepath, 'data/processed/workspace.rdata'))
 ```
