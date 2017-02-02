@@ -209,7 +209,7 @@ gg + clean_theme() + theme(legend.position="right")
 
 ## Aging Fleet
 
-* \> 46% of stations are running apparatus that is 15+ years old
+* \> 54% of stations are running apparatus that is 15+ years old
 
 ```{r, echo=FALSE}
 gg <- ggplot(melted, aes(age, 100*value)) + 
@@ -220,7 +220,7 @@ gg + clean_theme() + theme(legend.position="right")
 ```
 
 <div class="notes">
-* 46% is just a lower bound. This is the value associated with tankers (0-14), the lowest value in the (0-14) category. Because the set of depts running old tankers is unlikely to be a strict superset of departments running old engines or ladders, the percent of departments running any kind of old unit is almost certainly higher. Needs further analysis.
+* 54% is just a lower bound. This is the value associated with tankers (0-14), the lowest value in the (0-14) category. Because the set of depts running old tankers is unlikely to be a strict superset of departments running old engines or ladders, the percent of departments running any kind of old unit is almost certainly higher. Needs further analysis.
 
 *Future work*
 
