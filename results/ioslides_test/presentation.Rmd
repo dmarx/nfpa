@@ -1,5 +1,5 @@
 ---
-title: "Fire Service Survey: Initial Exploration and insights"
+title: "Fire Service Survey: Exploration and insights"
 author: David Marx
 date: 2/3/2017
 output: ioslides_presentation
@@ -14,20 +14,25 @@ library(knitr)
 library(rCharts)
 library(rMaps)
 library(shiny)
+library(scales)
+library(grid)
+library(RColorBrewer)
 
 basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
 load(paste0(basepath, 'data/processed/workspace.rdata'))
 ```
 
-# The Survey
+## A note on this presentation
 
-## Background
+* This presentation was constructed using Rstudio's ioslides output from RMarkdown 
+* To view in presenter mode: add '?presentme=true' to the URL and be sure to allow pop-ups
+* To view presenter notes, hit 'p' (sometimes this doesn't work properly, presenter mode is a more reliable way to see speaker notes)
+
+## The Survey
 
 * Fire Service Survey
 * 5458 Records (respondents)
 * Year unknown, post 2011 (per Q5)
-
-## Respondents by State
 
 ```{r gvis, echo=FALSE, message=FALSE, warning=FALSE}
 library(googleVis)
@@ -39,7 +44,7 @@ G <- gvisGeoChart(respondents_by_state, "state", "N",
                                #projection="kavrayskiy-vii",
                                displayMode="regions", 
                                resolution="provinces",
-                               colorAxis="{colors:['#91BFDB', '#FC8D59']}")
+                               colorAxis="{colors:['#FEE0D2', '#DE2D26']}")
 )
 ###print(G, filename="gvis_chart.html")
 cat(G$html$chart, file="gvis_chart.html")
@@ -50,8 +55,16 @@ shiny::includeHTML("gvis_chart.html")
 
 ![](C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/images/survey_screenshot.png)
 
-## Suggestions for improvement to survey
+## Suggestions for Improvement to survey
 
+* Migrate to electronic survey platform
+* Questions prompting numeric responses unnecessarily broken out into ordinals
+* Some questions poorly binned, resulting in skipped ranges and requiring "other" category
+* Inconsistent binning choice across similar questions
+* Inconsistent null representation
+* Numbers as text (comma separated)
+
+<div class="notes">
 * Questions prompting numeric responses unnecessarily broken out into ordinal variables reduces data granularity
     * Number of buildings with 3+ stories (Q3)
     * Minimum staffing (Q7-Q10)
@@ -60,17 +73,11 @@ shiny::includeHTML("gvis_chart.html")
 * Inconsistent binning choice across similar questions
     * Hazmat training level prompts for precise percentages
     * Other types of training ask respondent to check a box representing a range
-  
-
-## But most importantly...
-
-### Migrate to electronic survey platform
+    
+Migrate to electronic survey platform
 * Minimize errors from multiple human data-entry steps
 * Automatic data integrity checks (e.g. percents add up to 100)
 * Ensure necessary questions are not left blank
-
-
-## Suggestions for improvement to dataset
 
 * Inconsistent null representations
     * Empty cells
@@ -80,32 +87,27 @@ shiny::includeHTML("gvis_chart.html")
 * Columns out of order
     * Column order should align with ordering in survey
     * At first glance, it appears that Q31 is incomplete, and Q32-46 and all of PART VIII are missing
-  
-<div class="notes">
-### Cleaning Nulls
+
+Cleaning Nulls
+
 * For the purpose of this analysis, it is assumed that null entries on questions asking for numeric values are equivalent to a reponse of "0"
 * Cleaning in this fashion had the additional effect of creating a new "null" category on questions associated with categorical/ordinal variables, since categories are otherwise 1-indexed in the data
-* Normally I would advise performing this kind of cleaning operation on a variable-by-variable basis. Broad strokes are dangerous, but time was limited in this analysis.
-</div>
+* Normally I would advise performing this kind of cleaning operation on a variable-by-variable basis. Broad strokes are dangerous, but time was limited in this analysis.  
 
+Large numeric values used xx,xxx comma delimiting
 
-## Suggestions for improvement to dataset
-
-### Large numeric values used xx,xxx comma delimiting
 * Forces coersion to text
 * Necessitates otherwise unnecessary data cleaning step
 * Fewer characters for data entry = less work for data entry personnel
 
-<div class="notes">
-### Cleaning Numbers
+Cleaning Numbers
+
 * Stripped commas prior to numeric coersion, being careful to avoid stripping 
   commas from text columns
+
 </div>
-
   
-# FINDINGS
-
-## Overview
+## FINDINGS
 
 * Staffing levels (paid) are stable
 * Women have stronger representation in volunteer departments
@@ -115,7 +117,7 @@ shiny::includeHTML("gvis_chart.html")
 
 52% of departments have no full-time paid personnel. Of those that have paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
 
-```{r, echo=FALSE}
+```{r ecdf, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=4}
 ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
 yv <- ecdf_fn(2)
 
@@ -125,12 +127,14 @@ gg <- ggplot(survey_dt[q6>0],
         #stat_ecdf(geom='line') +
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
         geom_vline(color="red", xintercept = 2, linetype = "longdash") +
-        scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
+        #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
+        xlim(0,3) +
         labs(x="Absolute % Personnel Change (Paid)",
-             y="Cumulative Percent of Depts w/Paid Personnel"
+             y="Cumulative Percent of Depts w/Paid Personnel",
+             title="Percent Change Paid FFs since 2011"
              )
 
-gg
+gg + clean_theme()
 ```
 
 
@@ -139,11 +143,8 @@ gg
 * Controlling for department size, women have higher representation in volunteer departments
 * 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
 
-## Decision Boundary
 
-Approximately 14% representation
-
-```{r, echo=FALSE, warning=FALSE}
+```{r, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=5}
 intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
 slope     <- -coef(mod_prob)['total_ff'] / coef(mod_prob)['female_ff']
 
@@ -152,16 +153,17 @@ gg <- ggplot(all, aes(total_ff, female_ff)) +
   geom_abline(slope=slope, intercept=intercept, linetype = 2) +
   xlim(0,2000) +
   ylim(0,250) +
-  labs(x="Total Firefighters", y="Female Firefighters") +
-  geom_text(x=1000, y=150, angle=55, 
-            label="y = 0.144 x - 8.17",  fontface=3, size=3)
+  labs(x="Total Firefighters", y="Female Firefighters", 
+       title="Representation of Women in the Fire Service")
 
-gg
+gg<-gg + clean_theme() + theme(legend.position="right")
+  
+gg+geom_text(x=1000, y=150, angle=39, 
+            label="y = 0.144 x - 8.17",  fontface=3, size=3)
 ```
 
-## Representation of Women: Boring technical details
+<div class="notes">
 
-* Logistic regression
 * Relative effect on odds ratio of female_ff vs total_ff: 7x
 
 ```
@@ -173,21 +175,18 @@ female_ff    0.200858   0.012611   15.93   <2e-16 ***
 total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
 ```  
 
-## Model Validation
+*Model Validation*
 
 * Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%), 
 * p < 0.005 (permutation test)
 * Area Under ROC Curve: 0.84
 
 
-<div class="notes">
-* 2000 bo0tstrap iterations, found to give same results as 200 iterations
+* 2000 bootstrap iterations, found to give same results as 200 iterations
 * 200 Target shuffling iterations over 200 bootstrap iterations
-</div>
 
----
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.width=4, fig.height=3}
 roc_df = data.frame(xv=perf@x.values[[1]], yv=perf@y.values[[1]])
 
 gg <- ggplot(roc_df, aes(xv, yv)) + 
@@ -195,27 +194,35 @@ gg <- ggplot(roc_df, aes(xv, yv)) +
   geom_abline(slope=1, intercept=0, linetype=2) +
   labs(x="False Positive Rate",
        y="True Positive Rate",
-       title=paste0("ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"))
+       title=paste0("Logistic Regression Performance: ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"))
 
-gg
+gg + clean_theme() + theme(legend.position="right")
 
 ```
+
+
+</div>
 
 
 ## Aging Fleet
 
-
+* \> 46% of stations are running apparatus that is 15+ years old
 
 ```{r, echo=FALSE}
-ggplot(melted, aes(age, 100*value)) + 
+gg <- ggplot(melted, aes(age, 100*value)) + 
   geom_bar(aes(fill = variable), position = "dodge", stat="identity") +
   labs(title="Age of In-Service Apparatus",
        x="Age", y="Percent of Departments")
+gg + clean_theme() + theme(legend.position="right")
 ```
 
-## Future work
+<div class="notes">
+* 46% is just a lower bound. This is the value associated with tankers (0-14), the lowest value in the (0-14) category. Because the set of depts running old tankers is unlikely to be a strict superset of departments running old engines or ladders, the percent of departments running any kind of old unit is almost certainly higher. Needs further analysis.
 
-* More closely investigate variables associated with FD needs
+*Future work*
+
+* Dig deeper into varaibles associated with departmental needs
 * Be more careful with null data
-* Revisit gender analysis with zero-inflated modeling
 * Play with free text fields
+
+</div>

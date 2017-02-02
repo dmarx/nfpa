@@ -115,7 +115,7 @@ save(survey_dt, file=paste0(basepath, 'data/processed/survey_dt.rdata'))
 
 --> compare against part-time/volunteer/total
 
-```{r}
+```{r ecdf, fig.heigh=3, fig.width=4}
 ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
 yv <- ecdf_fn(2)
 
@@ -125,7 +125,8 @@ gg <- ggplot(survey_dt[q6>0],
         #stat_ecdf(geom='line') +
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
         geom_vline(color="red", xintercept = 2, linetype = "longdash") +
-        scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
+        #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
+        xlim(0,3) +
         labs(x="Absolute % Personnel Change (Paid)",
              y="Cumulative Percent of Depts w/Paid Personnel"
              )
@@ -319,7 +320,10 @@ gg <- ggplot(all, aes(total_ff, female_ff)) +
   ylim(0,250) +
   labs(x="Total Firefighters", y="Female Firefighters")
 
-gg + geom_text(x=1000, y=150, label="y = 0.144 x - 8.17", angle=40, fontface=3, size=3)
+palette <- brewer.pal("Greys", n=9)
+
+gg + geom_text(x=1000, y=150, label="y = 0.144 x - 8.17", angle=40, fontface=3, size=3) +
+  clean_theme() + theme(legend.position='right')
 
 ```
 
@@ -329,7 +333,48 @@ all[total_ff>0,mean(female_ff/total_ff>=.08), categ]
 
 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
 
-ggtheme: http://minimaxir.com/2015/02/ggplot-tutorial/
+```{r, echo=FALSE}
+#ggtheme: http://minimaxir.com/2015/02/ggplot-tutorial/
+
+clean_theme <- function() {
+      
+# Generate the colors for the chart procedurally with RColorBrewer
+palette <- brewer.pal("Greys", n=9)
+color.background = palette[2]
+color.grid.major = palette[3]
+color.axis.text = palette[6]
+color.axis.title = palette[7]
+color.title = palette[9]
+      
+# Begin construction of chart
+theme_bw(base_size=9) +
+        
+# Set the entire chart region to a light gray color
+theme(panel.background=element_rect(fill=color.background, color=color.background)) +
+theme(plot.background=element_rect(fill=color.background, color=color.background)) +
+theme(panel.border=element_rect(color=color.background)) +
+      
+# Format the grid
+theme(panel.grid.major=element_line(color=color.grid.major,size=.25)) +
+theme(panel.grid.minor=element_blank()) +
+theme(axis.ticks=element_blank()) +
+      
+# Format the legend, but hide by default
+theme(legend.position="none") +
+theme(legend.background = element_rect(fill=color.background)) +
+theme(legend.text = element_text(size=7,color=color.axis.title)) +
+      
+# Set title and axis labels, and format these and tick marks
+theme(plot.title=element_text(color=color.title, size=10, vjust=1.25)) +
+theme(axis.text.x=element_text(size=7,color=color.axis.text)) +
+theme(axis.text.y=element_text(size=7,color=color.axis.text)) +
+theme(axis.title.x=element_text(size=8,color=color.axis.title, vjust=0)) +
+theme(axis.title.y=element_text(size=8,color=color.axis.title, vjust=1.25)) +
+      
+# Plot margins
+theme(plot.margin = unit(c(0.35, 0.2, 0.3, 0.35), "cm"))
+}
+```
 
 ## Experiment with some mapping
 
@@ -343,7 +388,7 @@ G <- gvisGeoChart(respondents_by_state, "state", "N",
                                #projection="kavrayskiy-vii",
                                displayMode="regions", 
                                        resolution="provinces",
-                               colorAxis="{colors:['#91BFDB', '#FC8D59']}")
+                               colorAxis="{colors:['#FEE0D2', '#DE2D26']}")
                   )
 plot(G)
 ```
@@ -447,11 +492,17 @@ apparatus_insvc
 melted = melt(apparatus_insvc[,.(age, Engines=engn_perc, Ladders=ladr_perc, Tankers=tnkr_perc)], 
               id.vars='age')
 
-ggplot(melted, aes(age, 100*value)) + 
+gg <- ggplot(melted, aes(age, 100*value)) + 
   geom_bar(aes(fill = variable), position = "dodge", stat="identity") +
   labs(title="Age of In-Service Apparatus",
        x="Age", y="Percent of Departments")
+
+library(scales); library(grid);library(RColorBrewer)
+gg + clean_theme() + theme(legend.position="right")
 ```
+
+To do: calculate percentage of departments running apparatus greater than x years old for
+each age class. The above chart only gives us a lower bound.
 
 
 ```{r}
