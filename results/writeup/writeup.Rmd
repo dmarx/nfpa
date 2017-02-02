@@ -26,8 +26,8 @@ load(paste0(basepath, 'data/processed/workspace.rdata'))
 
 The Fire Service Survey is an annual survey administered by the NFPA. One of the main functions of the survey is to perform a needs assessment of departments in the US fire service. A preliminary investigation of a sample of survey responses identified that:
 
-* 99% of departments that staff paid personnel have experienced less than 2% net personnel change since 2011
-* Over 46% of stations are running apparatus that is 15+ years old
+* 18% of departments experienced a decling in paid/FTE firefighters since 2011
+* Over 46% of departments are running apparatus that is 15+ years old
 * 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
 
 ## The Survey
@@ -124,43 +124,40 @@ Finally, several columns in the data were out of order relative to their orderin
 
 For the purpose of this analysis, it is assumed that null entries on questions asking for numeric values are equivalent to a reponse of "0". Cleaning in this fashion had the additional effect of creating a new "null" category on questions associated with categorical/ordinal variables, since categories are otherwise 1-indexed in the data. Handling nulls in broad strokes such as this is generally inadvisable, but was determined to be suitable for the purposes of performing a quick preliminary exploration of this data.
 
-## Cleaning numbers stored as text
+### Cleaning numbers stored as text
 
 Because of the width of this data set (227 columns), instead of identifying columns in which numbers were stored as text individually and fixing their data as needed, the following automated approach was utilized to attempt to clean all such data in a single pass. For each column:
 
-1. Count the maximum number of characters for any value in the column.
+1. Count the maximum number of characters for any value in the column. If this value is higher than 10 (i.e. if it is a number, it is on the order of 10,000,000, which is greater than the US population) assume the column is not numeric.
+2. Remove any commas appearing in entries in the column.
+3. Attempt to coerce entries in the column to numeric. 
 
-
-* Stripped commas prior to numeric coersion, being careful to avoid stripping 
-  commas from text columns
-
-</div>
+This method was successful for all numeric data assessed in this analysis.
   
 ## FINDINGS
 
-* Staffing levels (paid) are stable
-* Women have stronger representation in volunteer departments
-* The apparatus fleet is aging
+## Stability of staffing levels
 
-## Staffing levels (paid) are stable
+The preliminary investigation found that staffing levels of paid firefighters are stable relative to their 2011 values. 
 
-52% of departments have no full-time paid personnel. Of those that have paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
+52% of departments have no full-time paid personnel. Of the departments that do employ full time paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
+
+The following chart provides the empirical distribution function for the absolute value of the net percent change for each department relative to their 2011 paid staffing. The highest observed for any department was an 11% change
 
 ```{r ecdf, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=4}
-ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
+ecdf_fn = ecdf(survey_dt[q6>0 & q6!= net_personnel_change, perc_personnel_change])
 yv <- ecdf_fn(2)
 
-gg <- ggplot(survey_dt[q6>0], 
-             aes(abs(perc_personnel_change), 100*ecdf_fn(abs(perc_personnel_change)))) +
+gg <- ggplot(survey_dt[q6>0& q6!= net_personnel_change], 
+             aes(100*(perc_personnel_change-1), 100*ecdf_fn(perc_personnel_change))) +
         geom_line() +
         #stat_ecdf(geom='line') +
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
-        geom_vline(color="red", xintercept = 2, linetype = "longdash") +
+        #geom_vline(color="red", xintercept = 2, linetype = "longdash") +
         #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
-        xlim(0,3) +
-        labs(x="Absolute % Personnel Change (Paid)",
-             y="Cumulative Percent of Depts w/Paid Personnel",
-             title="Percent Change Paid FFs since 2011"
+        xlim(-100,100) +
+        labs(x="% Personnel Change (Paid)",
+             y="Cumulative Percent of Depts w/Paid Personnel"
              )
 
 gg + clean_theme()

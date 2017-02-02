@@ -85,7 +85,7 @@ Personnel change (paid)
 ```{r}
 survey_dt[,net_personnel_change:=0]
 survey_dt[,net_personnel_change:=q5.1-q5.2]
-survey_dt[,perc_personnel_change:=(q6-net_personnel_change)/q6]
+survey_dt[,perc_personnel_change:=(q6+net_personnel_change)/(q6-net_personnel_change)]
 h = survey_dt[,hist(net_personnel_change, breaks=50)]
 plot(h$mids, h$counts, type='h', log='y') # log normal, mostly negligible net change
 
@@ -97,8 +97,8 @@ survey_dt[,plot(q6, net_personnel_change, main='Change as a function of total pe
 h2 = survey_dt[q6>0,hist(perc_personnel_change, main='Percent change from 2011')]
 plot(h2$mids, h2$counts, type='h')
 
-xv = seq(0,5, by=.01)
-ecdf_fn = survey_dt[,ecdf(abs(perc_personnel_change))]
+xv = seq(-5,5, by=.01)
+ecdf_fn = survey_dt[,ecdf(perc_personnel_change)]
 survey_dt[q6>0,plot(xv, ecdf_fn(xv))]
 #(right_tail = 1-ecdf_fn(1000)) # .0714
 (ecdf_fn(2)) # 0.9182143
@@ -116,18 +116,18 @@ save(survey_dt, file=paste0(basepath, 'data/processed/survey_dt.rdata'))
 --> compare against part-time/volunteer/total
 
 ```{r ecdf, fig.heigh=3, fig.width=4}
-ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
+ecdf_fn = ecdf(survey_dt[q6>0 & q6!= net_personnel_change, perc_personnel_change])
 yv <- ecdf_fn(2)
 
-gg <- ggplot(survey_dt[q6>0], 
-             aes(abs(perc_personnel_change), 100*ecdf_fn(abs(perc_personnel_change)))) +
+gg <- ggplot(survey_dt[q6>0& q6!= net_personnel_change], 
+             aes(100*(perc_personnel_change-1), 100*ecdf_fn(perc_personnel_change))) +
         geom_line() +
         #stat_ecdf(geom='line') +
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
-        geom_vline(color="red", xintercept = 2, linetype = "longdash") +
+        #geom_vline(color="red", xintercept = 2, linetype = "longdash") +
         #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
-        xlim(0,3) +
-        labs(x="Absolute % Personnel Change (Paid)",
+        xlim(-100,100) +
+        labs(x="% Personnel Change (Paid)",
              y="Cumulative Percent of Depts w/Paid Personnel"
              )
         

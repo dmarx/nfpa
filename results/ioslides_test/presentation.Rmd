@@ -109,29 +109,31 @@ Cleaning Numbers
   
 ## FINDINGS
 
-* Staffing levels (paid) are stable
+* Staffing levels (paid) are stable for most departments, but have changed significantly for others
 * Women have stronger representation in volunteer departments
 * The apparatus fleet is aging
 
-## Staffing levels (paid) are stable
+## Staffing levels
 
-52% of departments have no full-time paid personnel. Of those that have paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
+52% of departments have no full-time paid personnel. Of those that have paid personnel, relative to 2011: 
 
-```{r ecdf, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=4}
-ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
-yv <- ecdf_fn(2)
+* 18% experienced a staffing decline
+* 25% experienced a staffing increase
+* 57% experienced no net change to staffing
 
-gg <- ggplot(survey_dt[q6>0], 
-             aes(abs(perc_personnel_change), 100*ecdf_fn(abs(perc_personnel_change)))) +
+```{r ecdf, echo=FALSE, warning=FALSE, fig.height=3, fig.width=4}
+ecdf_fn = ecdf(survey_dt[q6>0 & q6!= net_personnel_change, perc_personnel_change])
+
+gg <- ggplot(survey_dt[q6>0& q6!= net_personnel_change], 
+             aes(100*(perc_personnel_change-1), 100*ecdf_fn(perc_personnel_change))) +
         geom_line() +
         #stat_ecdf(geom='line') +
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
-        geom_vline(color="red", xintercept = 2, linetype = "longdash") +
+        #geom_vline(color="red", xintercept = 2, linetype = "longdash") +
         #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
-        xlim(0,3) +
-        labs(x="Absolute % Personnel Change (Paid)",
-             y="Cumulative Percent of Depts w/Paid Personnel",
-             title="Percent Change Paid FFs since 2011"
+        xlim(-100,100) +
+        labs(x="% Personnel Change (Paid)",
+             y="Cumulative Percent of Depts w/Paid Personnel"
              )
 
 gg + clean_theme()
