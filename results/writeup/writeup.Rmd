@@ -140,13 +140,16 @@ This method was successful for all numeric data assessed in this analysis.
 
 The preliminary investigation found that staffing levels of paid firefighters are stable relative to their 2011 values. 
 
-52% of departments have no full-time paid personnel. Of the departments that do employ full time paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
+52% of departments have no full-time paid personnel. Of those that have paid personnel, relative to 2011 (and excluding departments that reported zero paid personnel in 2011): 
 
-The following chart provides the empirical distribution function for the absolute value of the net percent change for each department relative to their 2011 paid staffing. The highest observed for any department was an 11% change
+* 18% experienced a staffing decline
+* 25% experienced a staffing increase
+* 57% experienced no net change to staffing
+
+The following chart provides the empirical distribution function for the absolute value of the net percent change for each department relative to their 2011 paid staffing.
 
 ```{r ecdf, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=4}
 ecdf_fn = ecdf(survey_dt[q6>0 & q6!= net_personnel_change, perc_personnel_change])
-yv <- ecdf_fn(2)
 
 gg <- ggplot(survey_dt[q6>0& q6!= net_personnel_change], 
              aes(100*(perc_personnel_change-1), 100*ecdf_fn(perc_personnel_change))) +
@@ -155,20 +158,40 @@ gg <- ggplot(survey_dt[q6>0& q6!= net_personnel_change],
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
         #geom_vline(color="red", xintercept = 2, linetype = "longdash") +
         #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
-        xlim(-100,100) +
+        xlim(-150,150) +
         labs(x="% Personnel Change (Paid)",
-             y="Cumulative Percent of Depts w/Paid Personnel"
+             y="Cumulative Percent of Depts w/Paid Personnel",
+             title="Net change to paid staffing since 2011"
              )
 
 gg + clean_theme()
 ```
 
 
+
 ## Representation of Women
 
-* Controlling for department size, women have higher representation in volunteer departments
-* 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+Controlling for department size, women have measurably higher representation in volunteer departments. This was determined by treating reported counts of part-time/volunteer vs. paid/FTE as separate "departments" (so for this analysis, "volunteer department" is used to mean "volunteer *side*" for departments that employ both paid and volunteer firefighters), then fitting a logistic regression to the department type against the predictors of total firefighter count and female firefighter count for the department. Concretely, using the model formula:
 
+$$ isVolunteerDept \sim totalFF + femaleFF $$
+gave the resulting model:
+
+```{r}
+mod_summary = as.data.frame(summary(mod_prob)$coefficients)
+mod_summary[,'Pr(>|z|)'] = '<2e-16'
+
+kable(mod_summary)
+#mod_summary
+```
+
+Because volunteer departments are generally small, we should expect the size of the department to have a strong effect on our ability to predict, in the absence of other information, if that department is paid or volunteer. From the coefficients of this model, we can see that adding a single female firefighter to a department increases the odds of that department being volunteer approximately seven times more than if we remove a random firefighter.
+
+The above model provides us with  a decision boundary given by the line 
+
+$$femaleFF = 0.144totalFF -8.17$$
+
+
+In other words, if we observe that a department has over about 14% female firefighters, it's extremely likely (77% accuracy) that department is volunteer. We can see this phenomenon graphically:
 
 ```{r, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=5}
 intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
@@ -188,29 +211,17 @@ gg+geom_text(x=1000, y=150, angle=39,
             label="y = 0.144 x - 8.17",  fontface=3, size=3)
 ```
 
-<div class="notes">
-
-* Relative effect on odds ratio of female_ff vs total_ff: 7x
-
-```
-    is_volunteer_dept ~ total_ff + female_ff
-
-             Estimate Std. Error z value Pr(>|z|)    
-(Intercept)  1.641406   0.061250   26.80   <2e-16 ***
-female_ff    0.200858   0.012611   15.93   <2e-16 ***
-total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
-```  
-
-*Model Validation*
-
-* Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%), 
-* p < 0.005 (permutation test)
-* Area Under ROC Curve: 0.84
+Concretely, 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
 
 
-* 2000 bootstrap iterations, found to give same results as 200 iterations
-* 200 Target shuffling iterations over 200 bootstrap iterations
 
+### Model Validation
+
+To confirm this analysis, the accuracy statistic was investigated via permutation testing. To ensure the model was not "overfit" to the data, performance on out-of-sample data was evaluated using the bootstrap technique. A value of 77.0% was found for the bootstrapped accuracy with 2000 replications, with a 95% confidence interval of 75.3% - 78.7%. This confirms that the model was not fitting noist
+
+To ensure that the model performs better than random (i.e. that the accuracy was not a consequence of class imbalance), significance testing was accomplished by performing a permutation test (aka "target shuffling") with 200 replications over the bootstrapped accuracy statistic (with 200 replications, which was found to be sufficient to match the results of the 2000 replications bootstrapped accuracy), producing an estimated p-value of p < .005. 
+
+Finally, the overall model performance was evaluated using a Reciever Operator Characteristic (ROC) curve. The curve illustrated that high probability assignments capture most of the positive class in the data (i.e. the model assigns high probability appropriately). Additionally, the area under the ROC curve (AUC) was found to be $0.84$, providing additionally evidence that the model performs well (AUC close to 1 is good).
 
 ```{r, echo=FALSE, fig.width=4, fig.height=3}
 roc_df = data.frame(xv=perf@x.values[[1]], yv=perf@y.values[[1]])
@@ -226,8 +237,6 @@ gg + clean_theme() + theme(legend.position="right")
 
 ```
 
-
-</div>
 
 
 ## Aging Fleet

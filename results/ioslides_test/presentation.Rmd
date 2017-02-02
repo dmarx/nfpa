@@ -131,9 +131,10 @@ gg <- ggplot(survey_dt[q6>0& q6!= net_personnel_change],
         #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
         #geom_vline(color="red", xintercept = 2, linetype = "longdash") +
         #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
-        xlim(-100,100) +
+        xlim(-150,150) +
         labs(x="% Personnel Change (Paid)",
-             y="Cumulative Percent of Depts w/Paid Personnel"
+             y="Cumulative Percent of Depts w/Paid Personnel",
+             title="Net change to paid staffing since 2011"
              )
 
 gg + clean_theme()
