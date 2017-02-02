@@ -1,0 +1,257 @@
+---
+title: "Preliminary Investigation into Fire Service Survey Responses"
+author: David Marx
+date: 2/3/2017
+output: ioslides_presentation
+---
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(data.table)
+library(googleVis)
+library(knitr)
+library(rCharts)
+library(rMaps)
+library(shiny)
+library(scales)
+library(grid)
+library(RColorBrewer)
+
+basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
+load(paste0(basepath, 'data/processed/workspace.rdata'))
+```
+
+## Executive Summary
+
+The Fire Service Survey is an annual survey administered by the NFPA. One of the main functions of the survey is to perform a needs assessment of departments in the US fire service. A preliminary investigation of a sample of survey responses identified that:
+
+* 99% of departments that staff paid personnel have experienced less than 2% net personnel change since 2011
+* Over 46% of stations are running apparatus that is 15+ years old
+* 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+
+## The Survey
+
+Survey results were provided to the analytics team with very little context. A data dictionary was provided in the form of an annotated version of the survey, where the questions asked by departments were matched to the corresponding column names in the data. 
+
+![Data Dictionary](C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/images/survey_screenshot.png)
+
+It is unknown what year these results are from, but it is assumed they are all from the same year. Additionally, Part II, Question 5 asks:
+
+> "Has your department had a reduction or increase in total firefighter positions of full time equivalents (FTE) since 2011?"
+
+so it can therefore be presumed that the year of the data was from 2012 or later.
+
+Departments from all across the country were represented, with 5458 departmetns responding in total.
+
+```{r gvis, echo=FALSE, message=FALSE, warning=FALSE}
+library(googleVis)
+library(shiny)
+respondents_by_state = survey_dt[,.N, .(state)]
+
+G <- gvisGeoChart(respondents_by_state, "state", "N",
+                  options=list(region="US",
+                               #projection="kavrayskiy-vii",
+                               displayMode="regions", 
+                               resolution="provinces",
+                               colorAxis="{colors:['#FEE0D2', '#DE2D26']}")
+)
+###print(G, filename="gvis_chart.html")
+cat(G$html$chart, file="gvis_chart.html")
+shiny::includeHTML("gvis_chart.html") 
+```
+
+
+## Suggestions for Improvement to survey
+
+### Survey Administration
+
+The provided sample survey (the data dictionary) illustrates that the survey is being administered via pen and paper, completed by hand and then results are collected by human data entry. This process is time consuming for all involved, error-prone, and unnecessarily expensive. Associated costs include:
+
+* Printing the survey 
+* Mailing the survey
+* Delivering responses
+* Human data entry of responses
+
+All of these costs are relieved by administering future surveys using a digital platform. Because the contents of this survey are not sensitive, future surveys could be administered using free platforms such as Google Forms or SurveyMonkey. 
+
+Possibly more important than mitigating costs associated with the current survey system, migrating to a digital platform would increase the quality of the data collected in the survey. 
+
+* Someone performing data entry may misread or mistype the value of a response
+* Digital forms can enforce that only valid entries are submitted and perform data integrity checks as respondents complete the survey
+  * E.g. questions 14b asks for percentages that need to add up to 100, question 34 asks for several values that need to add up to the value of a human entered "total" field
+* Digital forms can enforce that required answers are alwys completed as a prerequisite for allowing submission
+
+### Survey Questions
+
+Less problematic than the mechanism by which the survey is administered, the survey prompts for responses on certain questions in a way that unnecessarily reduces data granularity. Many questions on the survey ask for the respondent to provide a value, but then invite the respondent to communicate the value as a range. For example, consider question 16, which asks about Wildland Firefighter Training:
+
+> "What percentage of personnel who perform this duty have received formal training?"
+> A. None (0%)
+> B. Few (1-25%)
+> C. Some (26-50%)
+> D. Many (51-75%)
+> E. Most (76-99%)
+> F. All (100%)
+
+Contrast this with question 14b, which when asking about EMS training, requires the respondent to provide (or at least aproximate) specific values of percentages for each EMS training level in their department. 
+
+Additionally, there are some questions in which the binning does not span the full range of values, requiring an "other" field, creating a mixed variable where some respondents provide precise values, but others respond with a category. Concretely, questions 22d and 22f, asking about the frequency of physical exams and fitness assessments, respectively, present the following options for responses:
+
+> A. New Firefighters Only
+> B. Every 6 Months or Annually
+> C. Every 2 years
+> D. Every 3 years
+> E. Other
+
+It is likely that these options will capture the majority of departments, but there's really nothing gained using this format relative to simply asking for a concrete number of months or "other" for responses requiring explanation.
+
+Asking for precise values in one place but ranges in others is inconsistent and produces data that is higher granularity for some variables than other. To mitigate this, respondents should be asked to provide (or approximate) precise values whereever possible.
+
+### Data representation
+
+The data was delivered for analysis in CSV format. It is unclear whether this was the original raw format of the aggregated data, or if this was an export from a database. In any event, there were several issues identified in this data representation that would be trivial to mitigate for future administrations of the survey, which would reduce preprocessing overhead for analytics. 
+
+First and foremost, null data was represented in multiple ways, primarily as either empty cells (199,102 occurrences), the text value '#NULL!' (188,236 occurrences) or white space (56,520 occurrences), suggesting the data was likely copied from another excel spreadsheet. It was additionally determined that in many instances, null data was not intended communicate a null response, but likely a zero-value response (e.g. in fields prompting for counts). Migrating to digital survey administration would eliminate this ambiguity and enforce a consistent representation for null data and ensure zero values are represented explicitly.
+
+Additionally, numeric values were often represented as comma-delimited numbers, i.e. text of the form "xx,xxx". Representing numbers as texts adds an unnecessary preprocessing step when working with the data and can result in mistakes if analysts, attempting to work with the full set of variables, do not notice the incorrect data type for such variables. Again, this is a problem that would be completely rectified by using a digital form to administer the survey.
+
+Finally, several columns in the data were out of order relative to their ordering in the survey. This is a relatively small problem, but at first glance it makes it appear as though a quarter of the variables are missing and introduces unnecessary risk of error if an analyst attempts to use numeric indexing to get to the variables they want rather than accessing them by name. When generating flat text files of this kind, in the future measures should be taken to preserve meaningful column ordering.
+
+## Data preprocessing
+
+### Cleaning Nulls
+
+For the purpose of this analysis, it is assumed that null entries on questions asking for numeric values are equivalent to a reponse of "0". Cleaning in this fashion had the additional effect of creating a new "null" category on questions associated with categorical/ordinal variables, since categories are otherwise 1-indexed in the data. Handling nulls in broad strokes such as this is generally inadvisable, but was determined to be suitable for the purposes of performing a quick preliminary exploration of this data.
+
+## Cleaning numbers stored as text
+
+Because of the width of this data set (227 columns), instead of identifying columns in which numbers were stored as text individually and fixing their data as needed, the following automated approach was utilized to attempt to clean all such data in a single pass. For each column:
+
+1. Count the maximum number of characters for any value in the column.
+
+
+* Stripped commas prior to numeric coersion, being careful to avoid stripping 
+  commas from text columns
+
+</div>
+  
+## FINDINGS
+
+* Staffing levels (paid) are stable
+* Women have stronger representation in volunteer departments
+* The apparatus fleet is aging
+
+## Staffing levels (paid) are stable
+
+52% of departments have no full-time paid personnel. Of those that have paid personnel, 99% of departments are within 2% of paid staffing levels from 2011. 
+
+```{r ecdf, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=4}
+ecdf_fn = ecdf(survey_dt[q6>0, abs(perc_personnel_change)])
+yv <- ecdf_fn(2)
+
+gg <- ggplot(survey_dt[q6>0], 
+             aes(abs(perc_personnel_change), 100*ecdf_fn(abs(perc_personnel_change)))) +
+        geom_line() +
+        #stat_ecdf(geom='line') +
+        #geom_text(color='red', size=3, label=round(yv,2), aes(x=2, y=yv), hjust=1, vjust=0) +
+        geom_vline(color="red", xintercept = 2, linetype = "longdash") +
+        #scale_x_continuous(breaks=c(0,2,4,6,8,10)) +
+        xlim(0,3) +
+        labs(x="Absolute % Personnel Change (Paid)",
+             y="Cumulative Percent of Depts w/Paid Personnel",
+             title="Percent Change Paid FFs since 2011"
+             )
+
+gg + clean_theme()
+```
+
+
+## Representation of Women
+
+* Controlling for department size, women have higher representation in volunteer departments
+* 21% of volunteer departments had at least 14% female staff, whereas only 1% of paid departments did.
+
+
+```{r, echo=FALSE, warning=FALSE, fig.height=3.5, fig.width=5}
+intercept <- -coef(mod_prob)['(Intercept)'] / coef(mod_prob)['female_ff']
+slope     <- -coef(mod_prob)['total_ff'] / coef(mod_prob)['female_ff']
+
+gg <- ggplot(all, aes(total_ff, female_ff)) +
+  geom_point(aes(color=categ), alpha=0.3) +
+  geom_abline(slope=slope, intercept=intercept, linetype = 2) +
+  xlim(0,2000) +
+  ylim(0,250) +
+  labs(x="Total Firefighters", y="Female Firefighters", 
+       title="Representation of Women in the Fire Service")
+
+gg<-gg + clean_theme() + theme(legend.position="right")
+  
+gg+geom_text(x=1000, y=150, angle=39, 
+            label="y = 0.144 x - 8.17",  fontface=3, size=3)
+```
+
+<div class="notes">
+
+* Relative effect on odds ratio of female_ff vs total_ff: 7x
+
+```
+    is_volunteer_dept ~ total_ff + female_ff
+
+             Estimate Std. Error z value Pr(>|z|)    
+(Intercept)  1.641406   0.061250   26.80   <2e-16 ***
+female_ff    0.200858   0.012611   15.93   <2e-16 ***
+total_ff    -0.028968   0.001392  -20.81   <2e-16 ***
+```  
+
+*Model Validation*
+
+* Bootstrapped accuracy: 77.0% (95% CI: 75.3% - 78.7%), 
+* p < 0.005 (permutation test)
+* Area Under ROC Curve: 0.84
+
+
+* 2000 bootstrap iterations, found to give same results as 200 iterations
+* 200 Target shuffling iterations over 200 bootstrap iterations
+
+
+```{r, echo=FALSE, fig.width=4, fig.height=3}
+roc_df = data.frame(xv=perf@x.values[[1]], yv=perf@y.values[[1]])
+
+gg <- ggplot(roc_df, aes(xv, yv)) + 
+  geom_line() +
+  geom_abline(slope=1, intercept=0, linetype=2) +
+  labs(x="False Positive Rate",
+       y="True Positive Rate",
+       title=paste0("Logistic Regression Performance: ROC curve (AUC: ",round(auroc@y.values[[1]],2),")"))
+
+gg + clean_theme() + theme(legend.position="right")
+
+```
+
+
+</div>
+
+
+## Aging Fleet
+
+* \> 46% of stations are running apparatus that is 15+ years old
+
+```{r, echo=FALSE}
+gg <- ggplot(melted, aes(age, 100*value)) + 
+  geom_bar(aes(fill = variable), position = "dodge", stat="identity") +
+  labs(title="Age of In-Service Apparatus",
+       x="Age", y="Percent of Departments")
+gg + clean_theme() + theme(legend.position="right")
+```
+
+<div class="notes">
+* 46% is just a lower bound. This is the value associated with tankers (0-14), the lowest value in the (0-14) category. Because the set of depts running old tankers is unlikely to be a strict superset of departments running old engines or ladders, the percent of departments running any kind of old unit is almost certainly higher. Needs further analysis.
+
+*Future work*
+
+* Dig deeper into varaibles associated with departmental needs
+* Be more careful with null data
+* Play with free text fields
+
+</div>
