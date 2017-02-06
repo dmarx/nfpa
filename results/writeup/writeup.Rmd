@@ -2,7 +2,7 @@
 title: "Preliminary Investigation into Fire Service Survey Responses"
 author: David Marx
 date: 2/3/2017
-output: ioslides_presentation
+output: word_document
 ---
 
 
@@ -176,7 +176,7 @@ Controlling for department size, women have measurably higher representation in 
 $$ isVolunteerDept \sim totalFF + femaleFF $$
 gave the resulting model:
 
-```{r}
+```{r, echo=FALSE}
 mod_summary = as.data.frame(summary(mod_prob)$coefficients)
 mod_summary[,'Pr(>|z|)'] = '<2e-16'
 

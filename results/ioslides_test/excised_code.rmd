@@ -1,0 +1,80 @@
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(data.table)
+library(googleVis)
+library(knitr)
+library(rCharts)
+library(rMaps)
+library(shiny)
+
+basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
+load(paste0(basepath, 'data/processed/workspace.rdata'))
+```
+
+
+
+
+
+
+## Respondents by State
+
+
+```{r, echo=FALSE}
+
+respondents_by_state = survey_dt[,.N, .(state)]
+
+G <- gvisGeoChart(respondents_by_state, "state", "N",
+                  options=list(region="US",
+                               #projection="kavrayskiy-vii",
+                               displayMode="regions", 
+                               resolution="provinces",
+                               colorAxis="{colors:['#91BFDB', '#FC8D59']}")
+)
+#plot(G)
+```
+
+
+## Respondents by State
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+library(rCharts)
+library(rMaps)
+library(shiny)
+
+#plot(G)
+#print(G, "chart")
+#G
+
+options(rcharts.cdn = TRUE)
+respondents_by_state = survey_dt[,.N, .(state)]
+
+icl <- ichoropleth(N~state, data=respondents_by_state)
+
+# Messy, but it works
+#icl$save("icl.html")
+#shiny::includeHTML("icl.html") 
+```
+
+
+---
+  
+```{r gvis}
+library(googleVis)
+library(shiny)
+respondents_by_state = survey_dt[,.N, .(state)]
+
+G <- gvisGeoChart(respondents_by_state, "state", "N",
+                  options=list(region="US",
+                               #projection="kavrayskiy-vii",
+                               displayMode="regions", 
+                               resolution="provinces",
+                               colorAxis="{colors:['#91BFDB', '#FC8D59']}")
+)
+###print(G, filename="gvis_chart.html")
+#cat(G$html$chart, file="gvis_chart.html")
+#shiny::includeHTML("gvis_chart.html") 
+```
+

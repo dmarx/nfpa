@@ -1,0 +1,323 @@
+<!doctype HTML>
+<meta charset = 'utf-8'>
+<html>
+  <head>
+    
+    <script src='http://d3js.org/d3.v3.min.js' type='text/javascript'></script>
+    <script src='http://d3js.org/topojson.v1.min.js' type='text/javascript'></script>
+    <script src='http://datamaps.github.io/scripts/datamaps.all.min.js' type='text/javascript'></script>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js' type='text/javascript'></script>
+    
+    <style>
+    .rChart {
+      display: block;
+      margin-left: auto; 
+      margin-right: auto;
+      width: 800px;
+      height: 400px;
+    }  
+    </style>
+    
+  </head>
+  <body>
+    <div id='chart25bc6e1825b8' class='rChart datamaps'></div>  
+    
+    <script id='popup-template' type='text/x-handlebars-template'>
+    
+</script>
+<script>
+  var chartParams = {
+ "dom": "chart25bc6e1825b8",
+"width":    800,
+"height":    400,
+"scope": "usa",
+"fills": {
+ "(1,43]": "#EFF3FF",
+"(43,70]": "#BDD7E7",
+"(70,100]": "#6BAED6",
+"(100,165]": "#3182BD",
+"(165,337]": "#08519C" 
+},
+"legend": true,
+"labels": true,
+"data": {
+ "AK": {
+ "state": [ "AK" ],
+"N": [ 32 ],
+"fillKey": [ "(1,43]" ] 
+},
+"AL": {
+ "state": [ "AL" ],
+"N": [ 117 ],
+"fillKey": [ "(100,165]" ] 
+},
+"AR": {
+ "state": [ "AR" ],
+"N": [ 99 ],
+"fillKey": [ "(70,100]" ] 
+},
+"AZ": {
+ "state": [ "AZ" ],
+"N": [ 67 ],
+"fillKey": [ "(43,70]" ] 
+},
+"CA": {
+ "state": [ "CA" ],
+"N": [ 194 ],
+"fillKey": [ "(165,337]" ] 
+},
+"CO": {
+ "state": [ "CO" ],
+"N": [ 79 ],
+"fillKey": [ "(70,100]" ] 
+},
+"CT": {
+ "state": [ "CT" ],
+"N": [ 73 ],
+"fillKey": [ "(70,100]" ] 
+},
+"DC": {
+ "state": [ "DC" ],
+"N": [ 1 ],
+"fillKey": [ null ] 
+},
+"DE": {
+ "state": [ "DE" ],
+"N": [ 12 ],
+"fillKey": [ "(1,43]" ] 
+},
+"FL": {
+ "state": [ "FL" ],
+"N": [ 112 ],
+"fillKey": [ "(100,165]" ] 
+},
+"GA": {
+ "state": [ "GA" ],
+"N": [ 100 ],
+"fillKey": [ "(70,100]" ] 
+},
+"HI": {
+ "state": [ "HI" ],
+"N": [ 4 ],
+"fillKey": [ "(1,43]" ] 
+},
+"IA": {
+ "state": [ "IA" ],
+"N": [ 145 ],
+"fillKey": [ "(100,165]" ] 
+},
+"ID": {
+ "state": [ "ID" ],
+"N": [ 35 ],
+"fillKey": [ "(1,43]" ] 
+},
+"IL": {
+ "state": [ "IL" ],
+"N": [ 337 ],
+"fillKey": [ "(165,337]" ] 
+},
+"IN": {
+ "state": [ "IN" ],
+"N": [ 131 ],
+"fillKey": [ "(100,165]" ] 
+},
+"KS": {
+ "state": [ "KS" ],
+"N": [ 122 ],
+"fillKey": [ "(100,165]" ] 
+},
+"KY": {
+ "state": [ "KY" ],
+"N": [ 123 ],
+"fillKey": [ "(100,165]" ] 
+},
+"LA": {
+ "state": [ "LA" ],
+"N": [ 65 ],
+"fillKey": [ "(43,70]" ] 
+},
+"MA": {
+ "state": [ "MA" ],
+"N": [ 156 ],
+"fillKey": [ "(100,165]" ] 
+},
+"MD": {
+ "state": [ "MD" ],
+"N": [ 37 ],
+"fillKey": [ "(1,43]" ] 
+},
+"ME": {
+ "state": [ "ME" ],
+"N": [ 106 ],
+"fillKey": [ "(100,165]" ] 
+},
+"MI": {
+ "state": [ "MI" ],
+"N": [ 273 ],
+"fillKey": [ "(165,337]" ] 
+},
+"MN": {
+ "state": [ "MN" ],
+"N": [ 182 ],
+"fillKey": [ "(165,337]" ] 
+},
+"MO": {
+ "state": [ "MO" ],
+"N": [ 165 ],
+"fillKey": [ "(100,165]" ] 
+},
+"MS": {
+ "state": [ "MS" ],
+"N": [ 49 ],
+"fillKey": [ "(43,70]" ] 
+},
+"MT": {
+ "state": [ "MT" ],
+"N": [ 43 ],
+"fillKey": [ "(1,43]" ] 
+},
+"NC": {
+ "state": [ "NC" ],
+"N": [ 191 ],
+"fillKey": [ "(165,337]" ] 
+},
+"ND": {
+ "state": [ "ND" ],
+"N": [ 65 ],
+"fillKey": [ "(43,70]" ] 
+},
+"NE": {
+ "state": [ "NE" ],
+"N": [ 72 ],
+"fillKey": [ "(70,100]" ] 
+},
+"NH": {
+ "state": [ "NH" ],
+"N": [ 64 ],
+"fillKey": [ "(43,70]" ] 
+},
+"NJ": {
+ "state": [ "NJ" ],
+"N": [ 101 ],
+"fillKey": [ "(100,165]" ] 
+},
+"NM": {
+ "state": [ "NM" ],
+"N": [ 35 ],
+"fillKey": [ "(1,43]" ] 
+},
+"NV": {
+ "state": [ "NV" ],
+"N": [ 16 ],
+"fillKey": [ "(1,43]" ] 
+},
+"NY": {
+ "state": [ "NY" ],
+"N": [ 291 ],
+"fillKey": [ "(165,337]" ] 
+},
+"OH": {
+ "state": [ "OH" ],
+"N": [ 333 ],
+"fillKey": [ "(165,337]" ] 
+},
+"OK": {
+ "state": [ "OK" ],
+"N": [ 75 ],
+"fillKey": [ "(70,100]" ] 
+},
+"OR": {
+ "state": [ "OR" ],
+"N": [ 74 ],
+"fillKey": [ "(70,100]" ] 
+},
+"PA": {
+ "state": [ "PA" ],
+"N": [ 225 ],
+"fillKey": [ "(165,337]" ] 
+},
+"RI": {
+ "state": [ "RI" ],
+"N": [ 35 ],
+"fillKey": [ "(1,43]" ] 
+},
+"SC": {
+ "state": [ "SC" ],
+"N": [ 70 ],
+"fillKey": [ "(43,70]" ] 
+},
+"SD": {
+ "state": [ "SD" ],
+"N": [ 49 ],
+"fillKey": [ "(43,70]" ] 
+},
+"TN": {
+ "state": [ "TN" ],
+"N": [ 81 ],
+"fillKey": [ "(70,100]" ] 
+},
+"TX": {
+ "state": [ "TX" ],
+"N": [ 270 ],
+"fillKey": [ "(165,337]" ] 
+},
+"UT": {
+ "state": [ "UT" ],
+"N": [ 43 ],
+"fillKey": [ "(1,43]" ] 
+},
+"VA": {
+ "state": [ "VA" ],
+"N": [ 79 ],
+"fillKey": [ "(70,100]" ] 
+},
+"VT": {
+ "state": [ "VT" ],
+"N": [ 43 ],
+"fillKey": [ "(1,43]" ] 
+},
+"WA": {
+ "state": [ "WA" ],
+"N": [ 94 ],
+"fillKey": [ "(70,100]" ] 
+},
+"WI": {
+ "state": [ "WI" ],
+"N": [ 200 ],
+"fillKey": [ "(165,337]" ] 
+},
+"WV": {
+ "state": [ "WV" ],
+"N": [ 63 ],
+"fillKey": [ "(43,70]" ] 
+},
+"WY": {
+ "state": [ "WY" ],
+"N": [ 30 ],
+"fillKey": [ "(1,43]" ] 
+} 
+},
+"id": "chart25bc6e1825b8" 
+}
+  chartParams.element = document.getElementById('chart25bc6e1825b8')
+  
+  
+  var mapchart25bc6e1825b8 = new Datamap(chartParams);
+  
+  
+    
+  // draw a bubble map if specified
+  if (chartParams.bubbles) {
+    var bubbles = chartParams.bubbles
+    mapchart25bc6e1825b8.bubbles(bubbles.data, bubbles.config)
+  }
+</script>
+
+<style>
+.datamaps {
+  position: relative;
+}
+</style>
+    
+  </body>
+</html>

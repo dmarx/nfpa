@@ -1,0 +1,293 @@
+<!-- GeoChart generated in R 3.2.2 by googleVis 0.5.8 package -->
+<!-- Thu Feb 02 15:19:13 2017 -->
+
+
+<!-- jsHeader -->
+<script type="text/javascript">
+ 
+// jsData 
+function gvisDataGeoChartID133c5bd934a8 () {
+var data = new google.visualization.DataTable();
+var datajson =
+[
+ [
+ "AK",
+32 
+],
+[
+ "AL",
+117 
+],
+[
+ "AR",
+99 
+],
+[
+ "AZ",
+67 
+],
+[
+ "CA",
+194 
+],
+[
+ "CO",
+79 
+],
+[
+ "CT",
+73 
+],
+[
+ "DC",
+1 
+],
+[
+ "DE",
+12 
+],
+[
+ "FL",
+112 
+],
+[
+ "GA",
+100 
+],
+[
+ "HI",
+4 
+],
+[
+ "IA",
+145 
+],
+[
+ "ID",
+35 
+],
+[
+ "IL",
+337 
+],
+[
+ "IN",
+131 
+],
+[
+ "KS",
+122 
+],
+[
+ "KY",
+123 
+],
+[
+ "LA",
+65 
+],
+[
+ "MA",
+156 
+],
+[
+ "MD",
+37 
+],
+[
+ "ME",
+106 
+],
+[
+ "MI",
+273 
+],
+[
+ "MN",
+182 
+],
+[
+ "MO",
+165 
+],
+[
+ "MS",
+49 
+],
+[
+ "MT",
+43 
+],
+[
+ "NC",
+191 
+],
+[
+ "ND",
+65 
+],
+[
+ "NE",
+72 
+],
+[
+ "NH",
+64 
+],
+[
+ "NJ",
+101 
+],
+[
+ "NM",
+35 
+],
+[
+ "NV",
+16 
+],
+[
+ "NY",
+291 
+],
+[
+ "OH",
+333 
+],
+[
+ "OK",
+75 
+],
+[
+ "OR",
+74 
+],
+[
+ "PA",
+225 
+],
+[
+ "RI",
+35 
+],
+[
+ "SC",
+70 
+],
+[
+ "SD",
+49 
+],
+[
+ "TN",
+81 
+],
+[
+ "TX",
+270 
+],
+[
+ "UT",
+43 
+],
+[
+ "VA",
+79 
+],
+[
+ "VT",
+43 
+],
+[
+ "WA",
+94 
+],
+[
+ "WI",
+200 
+],
+[
+ "WV",
+63 
+],
+[
+ "WY",
+30 
+] 
+];
+data.addColumn('string','state');
+data.addColumn('number','N');
+data.addRows(datajson);
+return(data);
+}
+ 
+// jsDrawChart
+function drawChartGeoChartID133c5bd934a8() {
+var data = gvisDataGeoChartID133c5bd934a8();
+var options = {};
+options["width"] =    556;
+options["height"] =    347;
+options["region"] = "US";
+options["displayMode"] = "regions";
+options["resolution"] = "provinces";
+options["colorAxis"] = {colors:['#FEE0D2', '#DE2D26']};
+
+
+    var chart = new google.visualization.GeoChart(
+    document.getElementById('GeoChartID133c5bd934a8')
+    );
+    chart.draw(data,options);
+    
+
+}
+  
+ 
+// jsDisplayChart
+(function() {
+var pkgs = window.__gvisPackages = window.__gvisPackages || [];
+var callbacks = window.__gvisCallbacks = window.__gvisCallbacks || [];
+var chartid = "geochart";
+  
+// Manually see if chartid is in pkgs (not all browsers support Array.indexOf)
+var i, newPackage = true;
+for (i = 0; newPackage && i < pkgs.length; i++) {
+if (pkgs[i] === chartid)
+newPackage = false;
+}
+if (newPackage)
+  pkgs.push(chartid);
+  
+// Add the drawChart function to the global list of callbacks
+callbacks.push(drawChartGeoChartID133c5bd934a8);
+})();
+function displayChartGeoChartID133c5bd934a8() {
+  var pkgs = window.__gvisPackages = window.__gvisPackages || [];
+  var callbacks = window.__gvisCallbacks = window.__gvisCallbacks || [];
+  window.clearTimeout(window.__gvisLoad);
+  // The timeout is set to 100 because otherwise the container div we are
+  // targeting might not be part of the document yet
+  window.__gvisLoad = setTimeout(function() {
+  var pkgCount = pkgs.length;
+  google.load("visualization", "1", { packages:pkgs, callback: function() {
+  if (pkgCount != pkgs.length) {
+  // Race condition where another setTimeout call snuck in after us; if
+  // that call added a package, we must not shift its callback
+  return;
+}
+while (callbacks.length > 0)
+callbacks.shift()();
+} });
+}, 100);
+}
+ 
+// jsFooter
+</script>
+ 
+<!-- jsChart -->  
+<script type="text/javascript" src="https://www.google.com/jsapi?callback=displayChartGeoChartID133c5bd934a8"></script>
+ 
+<!-- divChart -->
+  
+<div id="GeoChartID133c5bd934a8" 
+  style="width: 556; height: 347;">
+</div>
