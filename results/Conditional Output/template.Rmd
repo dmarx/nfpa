@@ -1,0 +1,53 @@
+---
+title: "Preliminary Investigation into Fire Service Survey Responses"
+author: David Marx
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output: 
+  word_document:
+    toc: TRUE
+---
+
+```{r, include=FALSE}
+#http://rmarkdown.rstudio.com/articles_docx.html
+```
+
+# Main heading
+
+## Second heading
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce erat sapien, sodales vel nisl et, vulputate sodales diam. Aliquam ligula risus, imperdiet pellentesque dolor vel, venenatis pellentesque nisl. Suspendisse potenti. In aliquet risus ac velit commodo gravida fringilla id velit. Vestibulum faucibus, ligula at maximus ornare, massa felis scelerisque massa, a condimentum urna risus in nulla. Aenean eu augue vitae libero laoreet posuere. Morbi tempus sed massa vestibulum cursus. Nulla lacinia felis a dapibus dictum. Cras faucibus dui quis leo suscipit, in vehicula lectus feugiat. Nullam ut lorem enim. Quisque pulvinar tempus elit pulvinar viverra.
+
+Sed vel vehicula leo, eget pharetra odio. Etiam rhoncus, sem a faucibus efficitur, sapien mi efficitur nibh, ac varius elit quam eget massa. Integer efficitur sodales metus, sit amet suscipit dui ornare et. Nullam id ante quam. Suspendisse varius risus velit, ac euismod ligula consequat at. Maecenas ante felis, cursus vel nibh quis, molestie fermentum ex. Sed vel posuere purus, sed mollis nunc. Integer dolor quam, tincidunt eu tristique vestibulum, viverra et ligula. Sed vehicula eu erat et hendrerit. Nulla nec ante eget odio ornare luctus. Donec imperdiet in lectus eu mollis. Duis consequat leo ac rutrum ullamcorper. Integer gravida pharetra urna, ut sagittis turpis lacinia sed. Mauris quis rutrum nibh. Nullam tincidunt volutpat libero, non viverra turpis rutrum vitae.
+
+## Second heading: additional formatting
+
+
+* top bullet
+* second bullet
+  * indented bullet
+  * indented bullet
+    * double indented?
+
+```
+this is a raw code block
+```
+
+```{r, echo=FALSE}
+library(knitr)
+basepath <- 'C:/Users/davidmarx/Documents/Projects/Toy Projects/nfpa/'
+load(paste0(basepath, 'data/processed/workspace.rdata'))
+
+mod_summary = as.data.frame(summary(mod_prob)$coefficients)
+mod_summary[,'Pr(>|z|)'] = '<2e-16'
+
+kable(mod_summary)
+```
+
+
+### third heading
+
+#### Fourth heading
+
+##### Fifth heading
+
+
