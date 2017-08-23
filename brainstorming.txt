@@ -1,0 +1,15 @@
+dm4rx@NFPAcareers
+
+
+
+Algorithms and modeling techniques: Statistical programming, Social network analysis, Numerical optimization, Risk analytics, Ensemble Modeling, Search and recommendation, Anomaly detection, Fraud analysis, Burst/trend detection, Natural language processing (NLP), Web scraping, Bayesian Inference, Machine Learning, Interactive data visualization, Rare event detection, Data Modeling, Logistic Regression, Generalized Linear Models, ANN, KNN, Discriminant Analysis, PCA, Clustering, Decision Tree, Classification and Regression Trees, RandomForest, SVM, Ensemble Modeling, Text Mining, Ontology
+Programming Languages: R, Python, SQL, PL/SQL, Javascript, D3.js, Bash, VBA, Matlab, Stan, BUGS, SAS
+Frameworks/Toolkits: Numpy, Scipy, Pandas, Scikit-Learn, SQLAlchemy, Flask, Shiny, Caret, data.table
+Web Technologies: HTML, CSS, jQuery, XML, d3.js, Oracle BI developer, Indri/Lemur, Apache Lucene/Solr, Apache Httpd, Jekyll, Bootstrap.js, Eclipse Che, sigma.js
+Databases, NoSQL, Big Data: Oracle 11g, SQLite, MySQL, MongoDB, Neo4j, Google Bigquery, AWS/EC2, Heroku
+Tool Proficiencies: Linux/UNIX, Git, Toad, Jupyter, RStudio, Gephi, SAS Enterprise Miner, Balsamiq, Excel
+
+References:
+Andrew Brooks -- 203-907-8023
+Zach Beaver -- 803-230-7522
+Scott Rigney -- 571-247-1722
